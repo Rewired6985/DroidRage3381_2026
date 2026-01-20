@@ -2,19 +2,19 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.HoodShooterSubsystem;
-import frc.robot.subsystems.StateMachineSubsystem;
+import frc.robot.subsystems.DataMgmtSubsystem;
 
 public class HoodShooterCommand extends Command
 {
 
-    private final StateMachineSubsystem ms_subsystem;
-    private final HoodShooterSubsystem m_subsystem;
+    private final DataMgmtSubsystem ms_data;
+    private final HoodShooterSubsystem ms_this;
     private double m_power;
 
-    public HoodShooterCommand(HoodShooterSubsystem subsystem, StateMachineSubsystem state_subsystem, double power)
+    public HoodShooterCommand(HoodShooterSubsystem subsystem, DataMgmtSubsystem data_subsystem, double power)
     {
-        m_subsystem  = subsystem;
-        ms_subsystem = state_subsystem;
+        ms_this  = subsystem;
+        ms_data = data_subsystem;
         m_power = power;
         addRequirements(subsystem);
     }
@@ -28,13 +28,13 @@ public class HoodShooterCommand extends Command
     @Override
     public void execute()
     {
-        m_subsystem.setPower(m_power);
+        ms_this.setPower(m_power);
     }
 
     @Override
     public void end(boolean interrupted)
     {
-        m_subsystem.setPower(0);
+        ms_this.setPower(0);
     }
     
     @Override

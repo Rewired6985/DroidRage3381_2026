@@ -1,26 +1,36 @@
 package frc.robot.commands;
 
+import java.util.List;
+
+import org.photonvision.targeting.PhotonTrackedTarget;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DrivetrainSubsystem;
-import frc.robot.subsystems.StateMachineSubsystem;
+import frc.robot.subsystems.DataMgmtSubsystem;
 
 public class DrivetrainCommand extends Command 
 {
-    private final DrivetrainSubsystem m_subsystem;
-    private final StateMachineSubsystem ms_subsystem;
+    private final DrivetrainSubsystem ms_this;
+    private final DataMgmtSubsystem ms_data;
     private final CommandXboxController m_gamepad;
     
-    public double LeftPower;
-    public double RightPower;
+    private double LeftPower;
+    private double RightPower;
 
-    public double gamepadX;
-    public double gamepadY;
+    private double gamepadX;
+    private double gamepadY;
 
-    public DrivetrainCommand(DrivetrainSubsystem subsystem, StateMachineSubsystem state_subsystem, CommandXboxController gamepad)
+    private PhotonTrackedTarget p_target;
+    private PhotonTrackedTarget b_target;
+
+
+
+    public DrivetrainCommand(DrivetrainSubsystem subsystem, DataMgmtSubsystem data_subsystem, CommandXboxController gamepad)
     {
-        m_subsystem  = subsystem;
-        ms_subsystem = state_subsystem;
+        ms_this  = subsystem;
+        ms_data = data_subsystem;
         m_gamepad    = gamepad;
         addRequirements(subsystem);
     }
@@ -35,6 +45,16 @@ public class DrivetrainCommand extends Command
     public void execute()
     {
 
+        if (ms_data.pabloResultValid) p_target = ms_data.getPabloTargets();
+        if (ms_data.baploResultValid) b_target = ms_data.getBaploTargets();
+
+        SmartDashboard.putBoolean("PabloValid?", ms_data.pabloResultValid);
+        SmartDashboard.putBoolean("BaploValid?", ms_data.pabloResultValid);
+
+        SmartDashboard.putNumber("PabloID", p_target.fiducialId);
+        SmartDashboard.putNumber("BaploID", b_target.fiducialId);
+
+
         gamepadX = m_gamepad.getLeftX() * 0.95;
         gamepadY = m_gamepad.getLeftY() * 0.95;
 
@@ -47,13 +67,13 @@ public class DrivetrainCommand extends Command
         if      (RightPower >  1) RightPower =  1;
         else if (RightPower < -1) RightPower = -1;
 
-        m_subsystem.setPower(LeftPower, RightPower);
+        ms_this.setPower(LeftPower, RightPower);
     }
 
     @Override
     public void end(boolean interrupted)
     {
-        m_subsystem.setPower(0,0);
+        ms_this.setPower(0,0);
     }
     
     @Override
