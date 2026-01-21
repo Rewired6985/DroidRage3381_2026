@@ -45,15 +45,25 @@ public class DrivetrainCommand extends Command
     public void execute()
     {
 
-        if (ms_data.pabloResultValid) p_target = ms_data.getPabloTargets();
-        if (ms_data.baploResultValid) b_target = ms_data.getBaploTargets();
+        boolean pabloResultValid = ms_data.getPabloValidity();
+        boolean baploResultValid = ms_data.getBaploValidity();
 
-        SmartDashboard.putBoolean("PabloValid?", ms_data.pabloResultValid);
-        SmartDashboard.putBoolean("BaploValid?", ms_data.pabloResultValid);
+        if (pabloResultValid) p_target = ms_data.getPabloTarget();
+        if (baploResultValid) b_target = ms_data.getBaploTarget();
 
-        SmartDashboard.putNumber("PabloID", p_target.fiducialId);
-        SmartDashboard.putNumber("BaploID", b_target.fiducialId);
+        SmartDashboard.putBoolean("PabloValid?", pabloResultValid);
+        SmartDashboard.putBoolean("BaploValid?", baploResultValid);
 
+        if (pabloResultValid) 
+        {
+            SmartDashboard.putNumber("PabloID", p_target.fiducialId);
+            SmartDashboard.putNumber("PabloYaw", p_target.yaw);
+        }
+        if (baploResultValid)
+        {
+            SmartDashboard.putNumber("BaploID", b_target.fiducialId);
+            SmartDashboard.putNumber("BaploYaw", b_target.yaw);
+        }
 
         gamepadX = m_gamepad.getLeftX() * 0.95;
         gamepadY = m_gamepad.getLeftY() * 0.95;

@@ -13,39 +13,41 @@ public class DataMgmtSubsystem extends SubsystemBase
 {
     
 
-    final PhotonCamera pablo = new PhotonCamera("DR3381_pablo");
-    final PhotonCamera baplo = new PhotonCamera("DR3381_baplo");
+    private PhotonCamera pablo = new PhotonCamera("DR3381_pablo");
+    private PhotonCamera baplo = new PhotonCamera("DR3381_baplo");
 
     public DataMgmtSubsystem(){}
-
-    public boolean pabloResultValid;
-    public boolean baploResultValid;
+        
+    private PhotonPipelineResult p_result;
+    private PhotonPipelineResult b_result;
 
     public void StateHandler()
     {
 
     }
 
-    public PhotonTrackedTarget getPabloTargets()
+    public boolean getPabloValidity()
     {
-        PhotonPipelineResult result = pablo.getLatestResult();
-        PhotonTrackedTarget return_value;
+        p_result = pablo.getLatestResult();
 
-        return_value     = result.getBestTarget();
-        pabloResultValid = result.hasTargets();
-
-        return return_value;
+        return p_result.hasTargets();
     }
 
-    public PhotonTrackedTarget getBaploTargets()
+    public PhotonTrackedTarget getPabloTarget()
     {
-        PhotonPipelineResult result = baplo.getLatestResult();
-        PhotonTrackedTarget return_value;
+        return p_result.getBestTarget();
+    }
 
-        return_value     = result.getBestTarget();
-        baploResultValid = result.hasTargets();
+    public boolean getBaploValidity()
+    {
+        b_result = baplo.getLatestResult();
 
-        return return_value;
+        return b_result.hasTargets();
+    }
+
+    public PhotonTrackedTarget getBaploTarget()
+    {
+        return b_result.getBestTarget();
     }
 
 }
