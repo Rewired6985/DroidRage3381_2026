@@ -7,6 +7,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,10 +17,12 @@ public class DrivetrainSubsystem extends SubsystemBase
 
     public DrivetrainSubsystem(){}
 
-    final TalonFX LeftMotor1  = new TalonFX(1);
-    final TalonFX LeftMotor2  = new TalonFX(2);
-    final TalonFX RightMotor1 = new TalonFX(3);
-    final TalonFX RightMotor2 = new TalonFX(4);
+    final CANBus driveBus = new CANBus("drivetrain");
+
+    final TalonFX LeftMotor1  = new TalonFX(1, driveBus);
+    final TalonFX LeftMotor2  = new TalonFX(2, driveBus);
+    final TalonFX RightMotor1 = new TalonFX(3, driveBus);
+    final TalonFX RightMotor2 = new TalonFX(4, driveBus);
 
     public void setPower(double leftPower, double rightPower)
     {
