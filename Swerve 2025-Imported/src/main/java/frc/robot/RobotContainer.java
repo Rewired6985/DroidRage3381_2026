@@ -44,8 +44,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.CarouselCommand;
 import frc.robot.commands.DrivetrainCommand;
 import frc.robot.commands.PositionChooserCommand;
+import frc.robot.commands.ShooterCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarouselSubsystem;
 // import frc.robot.Shooter.ShooterSubsystem;
@@ -53,6 +55,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -63,7 +66,7 @@ public class RobotContainer {
     private final DrivetrainSubsystem ms_drivetrain  = new DrivetrainSubsystem();
     private final IntakeSubsystem ms_intake          = new IntakeSubsystem();
     private final CarouselSubsystem ms_carousel      = new CarouselSubsystem();
-    // private final ShooterSubsystem ms_shooter        = new ShooterSubsystem();
+    private final ShooterSubsystem ms_shooter        = new ShooterSubsystem();
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -137,21 +140,24 @@ public class RobotContainer {
     SendableChooser<Command> p_chooser = new SendableChooser<>();
 
 
-    private final CommandXboxController controller = new CommandXboxController(0);
+    private final CommandXboxController controller  = new CommandXboxController(0);
     private final CommandXboxController controller2 = new CommandXboxController(1);
-    private final Joystick              joystick   = new Joystick(5);
+    private final Joystick              joystick    = new Joystick(5);
     // private final CommandXboxController a_pac1 = new CommandXboxController(2);
     // private final CommandXboxController a_pac2 = new CommandXboxController(3);
 
 
     private void configureBindings() 
     {
+        Trigger breakTrigger = new Trigger(ms_data::input3);
+        Trigger resetField   = new Trigger(ms_data::input5);
 
-
-        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, controller));
+        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
+        ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
+        ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-         drivetrain.setDefaultCommand(
+        drivetrain.setDefaultCommand(
 
         drivetrain.applyRequest(() ->
         drive.withVelocityX(ms_drivetrain.m_Xswerve * MaxSpeed)
@@ -159,9 +165,8 @@ public class RobotContainer {
              .withRotationalRate(ms_drivetrain.m_Rswerve * MaxAngularRate))
         );
 
-
-
         controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        breakTrigger  .whileTrue(drivetrain.applyRequest(() -> brake));
         controller.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))
         ));
@@ -177,6 +182,7 @@ public class RobotContainer {
 
         // reset the field-centric heading on y press
         controller.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        resetField.onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 

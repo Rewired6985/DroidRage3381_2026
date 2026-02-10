@@ -8,9 +8,23 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     public int driveMode = Constants.kd_AUTO;
 
+
+    public boolean input3;
+    public boolean input5;
+
     public DataMgmtSubsystem()
     {
 
+    }
+
+    public boolean input3() 
+    {
+        return input3;
+    }
+
+    public boolean input5()
+    {
+        return input5;
     }
 
 }

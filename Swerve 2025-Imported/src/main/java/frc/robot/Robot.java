@@ -58,7 +58,8 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.setDriveMode(Constants.kd_AUTO);
 
-    if (m_autonomousCommand != null) {
+    if (m_autonomousCommand != null) 
+    {
       m_autonomousCommand.schedule();
     }
   }
