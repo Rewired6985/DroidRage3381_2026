@@ -14,7 +14,7 @@ public class ShooterSubsystem extends SubsystemBase
     public void setPower(double set_power)
     {
         right_motor.set(-set_power);
-        left_motor .set(set_power);
+        left_motor .set( set_power);
     }
 
 }
