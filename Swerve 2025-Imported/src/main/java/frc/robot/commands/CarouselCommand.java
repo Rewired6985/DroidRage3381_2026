@@ -2,9 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants;
 import frc.robot.subsystems.CarouselSubsystem;
 import frc.robot.subsystems.DataMgmtSubsystem;
 
@@ -44,38 +42,60 @@ public class CarouselCommand extends Command
     @Override
     public void execute()
     {
-        switch (ms_data.driveMode)
+
+        switch (ms_data.Mode)
         {
-            case Constants.kd_TELEOP:
+            case TELEOP:
             {
                 if (usingJoystick)
                 {
                     if (m_joystick.getRawButton(2))
                     {
-                        ms_this.setPower(0.5);
+                        ms_this.setSpeed(0.5);
                     }
                     else
                     {
-                        ms_this.setPower(0);
+                        ms_this.setSpeed(0);
                     }
                 }
                 else
                 {
-                    ms_this.setPower(m_controller.getRightTriggerAxis());
+                    ms_this.setSpeed(m_controller.getRightTriggerAxis());
                 }
                 break;
             }
-            case Constants.kd_AUTO:
+            case AUTO:
             {
                 break;
             }
         }
+
+        switch (ms_data.aim.state)
+        {
+            case ZERO: 
+            {
+                break;
+            }
+            case HUNT:
+            {
+                break;
+            }
+            case FIRE: 
+            {
+                break;
+            }
+            case STANDBY: 
+            {
+                break;
+            }
+        }
+
     }
 
     @Override
     public void end(boolean interrupted)
     {
-        ms_this.setPower(0);
+        ms_this.setSpeed(0);
     }
     
     @Override

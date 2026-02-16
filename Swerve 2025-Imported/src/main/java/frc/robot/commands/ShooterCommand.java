@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -17,7 +16,7 @@ public class ShooterCommand extends Command
     private CommandXboxController m_controller;
     private boolean usingJoystick;
 
-    private double power = 0;
+    private double speed = 0;
     private int accCounter;
     private int dclCounter;
 
@@ -50,45 +49,71 @@ public class ShooterCommand extends Command
     public void execute()
     {
 
-        double usePower;
+        double useSpeed = 0;
 
-        switch (ms_data.driveMode)
+        
+        switch (ms_data.Mode)
         {
-            case Constants.kd_TELEOP:
+            case TELEOP:
             {
                 if (usingJoystick)
                 {
 
+                    //makes it so that every button press increments/decrements shooter speed
                     if (m_joystick.getRawButton(4)) dclCounter = dclCounter + 1;
                     else dclCounter = 0;
 
                     if (m_joystick.getRawButton(6)) accCounter = accCounter + 1;
                     else accCounter = 0;
 
-                    if (accCounter == 1) power = power + 0.05;
-                    if (dclCounter == 1) power = power - 0.05;
-
-                    if (m_joystick.getRawButton(1)) usePower = power;
-                    else                                   usePower = 0;
-
-                    SmartDashboard.putNumber("power", power);
-
-                    ms_this.setPower(usePower);
+                    if (accCounter == 1) speed = speed + 0.05;
+                    if (dclCounter == 1) speed = speed - 0.05;
+                    
+                    if (speed > 1) speed = 1;
+                    if (speed < 0) speed = 0;
+                    
+                    if (m_joystick.getRawButton(1)) useSpeed = speed;
+                    else                                   useSpeed = 0;
 
                 }
                 break;
             }
-            case Constants.kd_AUTO:
+            case AUTO:
             {
                 break;
             }
         }
+
+        switch (ms_data.aim.state)
+        {
+            case ZERO: 
+            {
+                break;
+            }
+            case HUNT:
+            {
+                break;
+            }
+            case FIRE: 
+            {
+                break;
+            }
+            case STANDBY: 
+            {
+                break;
+            }
+        }
+
+        
+        SmartDashboard.putNumber("speed", speed);
+        ms_this.setShooterSpeed(useSpeed);
+
     }
 
     @Override
     public void end(boolean interrupted)
     {
-        ms_this.setPower(0);
+        ms_this.setShooterSpeed(0);
     }
     
     @Override

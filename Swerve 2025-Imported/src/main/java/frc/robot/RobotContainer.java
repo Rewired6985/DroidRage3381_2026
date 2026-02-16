@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CarouselCommand;
 import frc.robot.commands.DrivetrainCommand;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.PositionChooserCommand;
 import frc.robot.commands.ShooterCommand;
 import frc.robot.generated.TunerConstants;
@@ -149,8 +150,9 @@ public class RobotContainer {
 
     private void configureBindings() 
     {
-        Trigger breakTrigger = new Trigger(ms_data::input3);
-        Trigger resetField   = new Trigger(ms_data::input5);
+        Trigger brakeTrigger = new Trigger(ms_data::brake);
+        Trigger resetField   = new Trigger(ms_data::reset);
+        Trigger switchIntake = new Trigger(ms_data::switchIntake);
 
         ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
         ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
@@ -166,11 +168,12 @@ public class RobotContainer {
         );
 
         controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        breakTrigger  .whileTrue(drivetrain.applyRequest(() -> brake));
+        brakeTrigger  .whileTrue(drivetrain.applyRequest(() -> brake));
         controller.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))
         ));
 
+        switchIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
 
 
         // Run SysId routines when holding back/start and X/Y.
@@ -232,9 +235,9 @@ public class RobotContainer {
         YLog.append(drivetrain.getState().Pose.getY());
     }
 
-    public void setDriveMode(int mode)
+    public void setDriveMode(Constants.eMode mode)
     {
-        ms_data.driveMode = mode;
+        ms_data.Mode = mode;
     }
 
     

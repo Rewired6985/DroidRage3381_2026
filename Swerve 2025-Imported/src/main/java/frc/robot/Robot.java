@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
   @Override 
   public void robotPeriodic() 
   {
-    CommandScheduler.getInstance().run(); 
+    CommandScheduler.getInstance().run();
   }
     
   
@@ -37,8 +37,6 @@ public class Robot extends TimedRobot {
   {
 
   }
-    
-  
     
   @Override
   public void disabledPeriodic() 
@@ -56,7 +54,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() 
   {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_robotContainer.setDriveMode(Constants.kd_AUTO);
+    m_robotContainer.setDriveMode(Constants.eMode.AUTO);
 
     if (m_autonomousCommand != null) 
     {
@@ -80,7 +78,7 @@ public class Robot extends TimedRobot {
     {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.setDriveMode(Constants.kd_TELEOP);
+    m_robotContainer.setDriveMode(Constants.eMode.TELEOP);
   }
 
   @Override

@@ -9,11 +9,22 @@ public class CarouselSubsystem extends SubsystemBase
 
     public CarouselSubsystem(){}
 
-    final TalonFX motor = new TalonFX(14);
+    final TalonFX carousel_motor = new TalonFX(14);
+    final TalonFX gate_motor = new TalonFX(30);
 
-    public void setPower(double power)
+    public void setCarouselSpeed(double speed)
     {
-        motor.set(power);
+        carousel_motor.set(speed);
+    }
+
+    public void setGateSpeed(double speed)
+    {
+        gate_motor.set(speed);
+    }
+
+    public double getGatePosition()
+    {
+        return gate_motor.getPosition().getValueAsDouble();
     }
 
 }

@@ -1,10 +1,29 @@
 package frc.robot;
 
-public final class Constants 
+public class Constants 
 {
 
-    //drivetrain states
-    public static final int kd_AUTO   = 0;
-    public static final int kd_TELEOP = 1;
+    public enum eMode
+    {
+        AUTO, 
+        TELEOP;
+    }
 
+    public enum eAim
+    {
+        ZERO, 
+        HUNT, 
+        FIRE, 
+        STANDBY;
+    }
+
+    public enum eIntake
+    {
+        DEPLOY,
+        RETRACT,
+        STOP,
+        RUN;
+    }
+    
+    
 }
