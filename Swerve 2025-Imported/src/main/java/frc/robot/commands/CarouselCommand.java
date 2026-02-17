@@ -51,16 +51,16 @@ public class CarouselCommand extends Command
                 {
                     if (m_joystick.getRawButton(2))
                     {
-                        ms_this.setSpeed(0.5);
+                        ms_this.setCarouselSpeed(0.5);
                     }
                     else
                     {
-                        ms_this.setSpeed(0);
+                        ms_this.setCarouselSpeed(0);
                     }
                 }
                 else
                 {
-                    ms_this.setSpeed(m_controller.getRightTriggerAxis());
+                    ms_this.setCarouselSpeed(m_controller.getRightTriggerAxis());
                 }
                 break;
             }
@@ -95,7 +95,7 @@ public class CarouselCommand extends Command
     @Override
     public void end(boolean interrupted)
     {
-        ms_this.setSpeed(0);
+        ms_this.setCarouselSpeed(0);
     }
     
     @Override

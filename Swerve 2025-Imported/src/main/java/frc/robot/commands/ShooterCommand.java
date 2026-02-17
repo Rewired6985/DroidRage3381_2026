@@ -16,7 +16,7 @@ public class ShooterCommand extends Command
     private CommandXboxController m_controller;
     private boolean usingJoystick;
 
-    private double speed = 0;
+    private double shooterSpeed = 0;
     private int accCounter;
     private int dclCounter;
 
@@ -48,34 +48,54 @@ public class ShooterCommand extends Command
     @Override
     public void execute()
     {
-
-        double useSpeed = 0;
-
         
+        double turretSpeed = 0;
+        double useSpeed = 0;
+       
+        boolean accelerate = false;
+        boolean decelerate = false;
+        boolean trigger = false;
+        boolean swivel_left = false;
+        boolean swivel_right = false;
+
         switch (ms_data.Mode)
         {
             case TELEOP:
             {
                 if (usingJoystick)
                 {
-
-                    //makes it so that every button press increments/decrements shooter speed
-                    if (m_joystick.getRawButton(4)) dclCounter = dclCounter + 1;
-                    else dclCounter = 0;
-
-                    if (m_joystick.getRawButton(6)) accCounter = accCounter + 1;
-                    else accCounter = 0;
-
-                    if (accCounter == 1) speed = speed + 0.05;
-                    if (dclCounter == 1) speed = speed - 0.05;
-                    
-                    if (speed > 1) speed = 1;
-                    if (speed < 0) speed = 0;
-                    
-                    if (m_joystick.getRawButton(1)) useSpeed = speed;
-                    else                                   useSpeed = 0;
-
+                    accelerate = m_joystick.getRawButton(6);
+                    decelerate = m_joystick.getRawButton(4);
+                    trigger = m_joystick.getRawButton(1);
                 }
+                else 
+                {
+                    accelerate = m_controller.rightBumper().getAsBoolean();
+                    decelerate = m_controller.leftBumper().getAsBoolean();
+                    trigger = m_controller.b().getAsBoolean();
+                    swivel_left = m_controller.povLeft().getAsBoolean();
+                    swivel_right = m_controller.povRight().getAsBoolean();
+                }
+
+                //makes it so that every button press increments/decrements shooter shooterSpeed
+                if (decelerate) dclCounter = dclCounter + 1;
+                else dclCounter = 0;
+
+                if (accelerate) accCounter = accCounter + 1;
+                else accCounter = 0;
+
+                if (accCounter == 1) shooterSpeed = shooterSpeed + 0.05;
+                if (dclCounter == 1) shooterSpeed = shooterSpeed - 0.05;
+                
+                if (shooterSpeed > 1) shooterSpeed = 1;
+                if (shooterSpeed < 0) shooterSpeed = 0;
+                
+                if (trigger) useSpeed = shooterSpeed;
+                else         useSpeed = 0;
+
+                if (swivel_left)       turretSpeed = 0.05;
+                else if (swivel_right) turretSpeed = -0.05;
+                else                   turretSpeed = 0;
                 break;
             }
             case AUTO:
@@ -105,9 +125,11 @@ public class ShooterCommand extends Command
         }
 
         
-        SmartDashboard.putNumber("speed", speed);
+        SmartDashboard.putNumber("shooter speed",   shooterSpeed);
+        SmartDashboard.putNumber("turret position", ms_this.getTurretPosition());
         ms_this.setShooterSpeed(useSpeed);
-
+        ms_this.setTurretSpeed(turretSpeed);
+        
     }
 
     @Override

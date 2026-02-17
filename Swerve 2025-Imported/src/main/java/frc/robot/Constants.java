@@ -3,13 +3,13 @@ package frc.robot;
 public class Constants 
 {
 
-    public enum eMode
+    public static enum eMode
     {
         AUTO, 
         TELEOP;
     }
 
-    public enum eAim
+    public static enum eAim
     {
         ZERO, 
         HUNT, 
@@ -17,7 +17,7 @@ public class Constants
         STANDBY;
     }
 
-    public enum eIntake
+    public static enum eIntake
     {
         DEPLOY,
         RETRACT,
@@ -25,5 +25,5 @@ public class Constants
         RUN;
     }
     
-    
+
 }

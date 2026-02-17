@@ -82,31 +82,8 @@ public class RobotContainer {
     private DoubleLogEntry XLog;
     private DoubleLogEntry YLog;
 
-    //pablo configs                          (X,Y,Z,R,P,Y)
-    public double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
-    public PhotonCamera pablo              = new PhotonCamera("DR3381_pablo");
-    public Translation3d pablo_translation = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
-    public Rotation3d    pablo_rotation    = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
-    public Transform3d   pablo_transform   = new Transform3d(pablo_translation, pablo_rotation);
-    public SimCameraProperties pabloProp   = new SimCameraProperties();
-    public PhotonCameraSim sim_pablo       = new PhotonCameraSim(pablo, pabloProp);
-    public PhotonPoseEstimator pablo_estimator   = new PhotonPoseEstimator(field_2026, pablo_transform);
-    
-    //baplo configs                           (X,Y,Z,R,P,Y)
-    public double[] baplo_pos              = {0.1,0.1,0.1,0,-15,-15};
-    public PhotonCamera baplo              = new PhotonCamera("DR3381_baplo");
-    public Translation3d baplo_translation = new Translation3d(baplo_pos[0],baplo_pos[1],baplo_pos[2]);
-    public Rotation3d    baplo_rotation    = new Rotation3d(Math.toRadians(baplo_pos[3]),Math.toRadians(baplo_pos[4]),Math.toRadians(baplo_pos[5]));
-    public Transform3d   baplo_transform   = new Transform3d(baplo_translation, baplo_rotation);
-    public SimCameraProperties baploProp   = new SimCameraProperties();
-    public PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
-    public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
-
     public Pose2d pose;
         
-    public PhotonPipelineResult p_result;
-    public PhotonPipelineResult b_result;
-
     SwerveModulePosition[] positions = 
     {
     drivetrain.getModules()[0].getCachedPosition(),
@@ -205,8 +182,8 @@ public class RobotContainer {
         final int choose_right  = 3;
 
         configureBindings();
-        visionSim.addCamera(sim_pablo, pablo_transform);
-        visionSim.addCamera(sim_baplo, baplo_transform);
+        visionSim.addCamera(ms_data.cameras.sim_pablo, ms_data.cameras.pablo_transform);
+        visionSim.addCamera(ms_data.cameras.sim_baplo, ms_data.cameras.baplo_transform);
         visionSim.addAprilTags(field_2026);
 
 
@@ -255,21 +232,21 @@ public class RobotContainer {
 
     public void runVisionSim()
     {
-        boolean pabloResultValid = getPabloValidity();
-        boolean baploResultValid = getBaploValidity();
+        boolean pabloResultValid = ms_data.cameras.getPabloValidity();
+        boolean baploResultValid = ms_data.cameras.getBaploValidity();
 
 
         if(pabloResultValid)
         {
-            Optional<EstimatedRobotPose>  pablo_est = pablo_estimator.estimateCoprocMultiTagPose(getPabloResult());
-            if (pablo_est.isEmpty())      pablo_est = pablo_estimator.estimateLowestAmbiguityPose(p_result);
+            Optional<EstimatedRobotPose>  pablo_est = ms_data.cameras.pablo_estimator.estimateCoprocMultiTagPose(ms_data.cameras.getPabloResult());
+            if (pablo_est.isEmpty())      pablo_est = ms_data.cameras.pablo_estimator.estimateLowestAmbiguityPose(ms_data.cameras.p_result);
             poseEstimator.addVisionMeasurement(pablo_est.get().estimatedPose.toPose2d(), pablo_est.get().timestampSeconds);
         } 
 
         if (baploResultValid)
         {
-            Optional<EstimatedRobotPose>  baplo_est = baplo_estimator.estimateCoprocMultiTagPose(getBaploResult());
-            if (baplo_est.isEmpty())      baplo_est = baplo_estimator.estimateLowestAmbiguityPose(b_result);
+            Optional<EstimatedRobotPose>  baplo_est = ms_data.cameras.baplo_estimator.estimateCoprocMultiTagPose(ms_data.cameras.getBaploResult());
+            if (baplo_est.isEmpty())      baplo_est = ms_data.cameras.baplo_estimator.estimateLowestAmbiguityPose(ms_data.cameras.b_result);
             poseEstimator.addVisionMeasurement(baplo_est.get().estimatedPose.toPose2d(), baplo_est.get().timestampSeconds);
 
         }
@@ -293,38 +270,5 @@ public class RobotContainer {
 
     }
 
-        public PhotonPipelineResult getPabloResult()
-    {
-        return pablo.getLatestResult();
-    }
-
-    public PhotonPipelineResult getBaploResult()
-    {
-        return baplo.getLatestResult();
-    }
-
-    public boolean getPabloValidity()
-    {
-        p_result = pablo.getLatestResult();
-
-        return p_result.hasTargets();
-    }
-
-    public PhotonTrackedTarget getPabloTarget()
-    {
-        return p_result.getBestTarget();
-    }
-
-    public boolean getBaploValidity()
-    {
-        b_result = baplo.getLatestResult();
-
-        return b_result.hasTargets();
-    }
-
-    public PhotonTrackedTarget getBaploTarget()
-    {
-        return b_result.getBestTarget();
-    }
     
 }
