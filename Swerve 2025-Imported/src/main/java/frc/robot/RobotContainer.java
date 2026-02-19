@@ -45,13 +45,13 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CarouselCommand;
+import frc.robot.commands.DataMgmtCommand;
 import frc.robot.commands.DrivetrainCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.PositionChooserCommand;
 import frc.robot.commands.ShooterCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarouselSubsystem;
-// import frc.robot.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -62,8 +62,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
 
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final DataMgmtSubsystem ms_data          = new DataMgmtSubsystem();
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final DrivetrainSubsystem ms_drivetrain  = new DrivetrainSubsystem();
     private final IntakeSubsystem ms_intake          = new IntakeSubsystem();
     private final CarouselSubsystem ms_carousel      = new CarouselSubsystem();
@@ -71,37 +71,11 @@ public class RobotContainer {
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
-    private double m_lastSimTime = Utils.getCurrentTimeSeconds();
-
-    private VisionSystemSim visionSim = new VisionSystemSim("test sim");
         
-    
     public AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
     private DoubleLogEntry XLog;
     private DoubleLogEntry YLog;
-
-    public Pose2d pose;
-        
-    SwerveModulePosition[] positions = 
-    {
-    drivetrain.getModules()[0].getCachedPosition(),
-    drivetrain.getModules()[1].getCachedPosition(),
-    drivetrain.getModules()[2].getCachedPosition(),
-    drivetrain.getModules()[3].getCachedPosition()
-    };
-
-    Pigeon2 pigeon = drivetrain.getPigeon2();
-    
-
-    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator
-    (
-        drivetrain.getKinematics(),  
-        Rotation2d.fromRotations(pigeon.getYaw().getValueAsDouble()),
-        positions,
-        new Pose2d(4.5,4,pigeon.getRotation2d())
-    );
 
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -131,9 +105,11 @@ public class RobotContainer {
         Trigger resetField   = new Trigger(ms_data::reset);
         Trigger switchIntake = new Trigger(ms_data::switchIntake);
 
-        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
+        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, controller));
         ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
-        ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
+        ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, controller));
+
+        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -182,9 +158,7 @@ public class RobotContainer {
         final int choose_right  = 3;
 
         configureBindings();
-        visionSim.addCamera(ms_data.cameras.sim_pablo, ms_data.cameras.pablo_transform);
-        visionSim.addCamera(ms_data.cameras.sim_baplo, ms_data.cameras.baplo_transform);
-        visionSim.addAprilTags(field_2026);
+        ms_data.position.setupVisionSim();
 
 
         p_chooser.setDefaultOption("left",   new PositionChooserCommand(choose_left));
@@ -197,8 +171,8 @@ public class RobotContainer {
 
     public void updateInitPosition()
     {
-        PositionChooserCommand PoseChooser = (PositionChooserCommand)p_chooser.getSelected();
-        pose = PoseChooser.getInitPosition();
+        PositionChooserCommand PoseChooser = (PositionChooserCommand) p_chooser.getSelected();
+        ms_data.position.pose = PoseChooser.getInitPosition();
     }
             
     public Command getAutonomousCommand() 
@@ -217,58 +191,16 @@ public class RobotContainer {
         ms_data.Mode = mode;
     }
 
-    
-
-    public void runPositionSim()
+    public void setSimState(boolean in_sim)
     {
-     m_lastSimTime = Utils.getCurrentTimeSeconds();
-
-      final double currentTime = Utils.getCurrentTimeSeconds();
-      double deltaTime = currentTime - m_lastSimTime;
-      m_lastSimTime = currentTime;
-      
-      drivetrain.updateSimState(deltaTime, 12);
+        ms_data.inSim = in_sim;
     }
 
-    public void runVisionSim()
+    public void updateDrivetrain()
     {
-        boolean pabloResultValid = ms_data.cameras.getPabloValidity();
-        boolean baploResultValid = ms_data.cameras.getBaploValidity();
-
-
-        if(pabloResultValid)
-        {
-            Optional<EstimatedRobotPose>  pablo_est = ms_data.cameras.pablo_estimator.estimateCoprocMultiTagPose(ms_data.cameras.getPabloResult());
-            if (pablo_est.isEmpty())      pablo_est = ms_data.cameras.pablo_estimator.estimateLowestAmbiguityPose(ms_data.cameras.p_result);
-            poseEstimator.addVisionMeasurement(pablo_est.get().estimatedPose.toPose2d(), pablo_est.get().timestampSeconds);
-        } 
-
-        if (baploResultValid)
-        {
-            Optional<EstimatedRobotPose>  baplo_est = ms_data.cameras.baplo_estimator.estimateCoprocMultiTagPose(ms_data.cameras.getBaploResult());
-            if (baplo_est.isEmpty())      baplo_est = ms_data.cameras.baplo_estimator.estimateLowestAmbiguityPose(ms_data.cameras.b_result);
-            poseEstimator.addVisionMeasurement(baplo_est.get().estimatedPose.toPose2d(), baplo_est.get().timestampSeconds);
-
-        }
-
-        Transform2d visionTransform2d = new Transform2d(drivetrain.getState().Pose.getTranslation(),pigeon.getRotation2d());
-
-        visionSim.update(pose.transformBy(visionTransform2d));
-
-        positions[0] = drivetrain.getModule(0).getCachedPosition();
-        positions[1] = drivetrain.getModule(1).getCachedPosition();
-        positions[2] = drivetrain.getModule(2).getCachedPosition();
-        positions[3] = drivetrain.getModule(3).getCachedPosition();
-
-        poseEstimator.update(pigeon.getRotation2d(), positions);
-
-        SmartDashboard.putNumber("driveX", poseEstimator.getEstimatedPosition().getX());
-        SmartDashboard.putNumber("driveY", poseEstimator.getEstimatedPosition().getY());
-
-        SmartDashboard.putBoolean("p?", pabloResultValid);
-        SmartDashboard.putBoolean("b?", baploResultValid);
-
+        ms_data.position.updateDrivetrain(drivetrain);
     }
+
 
     
 }

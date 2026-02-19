@@ -1,24 +1,42 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
+
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.generated.TunerConstants;
 
 public class DataMgmtSubsystem extends SubsystemBase
 {
-    // public Constants Constants = new Constants();
+
     public Constants.eMode Mode = Constants.eMode.AUTO;
+    public boolean inSim = false;
 
     public class aimStruct
     {
@@ -47,12 +65,39 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean switchIntake;
     }
 
-    public class cameraStruct
+    public class positionStruct
     {
+
+        private CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+        private VisionSystemSim visionSim = new VisionSystemSim("test sim");
+
+        public Pose2d pose;
+
+        
+        private double m_lastSimTime = Utils.getCurrentTimeSeconds();
+        
+        SwerveModulePosition[] positions = 
+        {
+        drivetrain.getModules()[0].getCachedPosition(),
+        drivetrain.getModules()[1].getCachedPosition(),
+        drivetrain.getModules()[2].getCachedPosition(),
+        drivetrain.getModules()[3].getCachedPosition()
+        };
+
+        Pigeon2 pigeon = drivetrain.getPigeon2();
+
+        private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator
+        (
+        drivetrain.getKinematics(),  
+        Rotation2d.fromRotations(pigeon.getYaw().getValueAsDouble()),
+        positions,
+        new Pose2d(4.5,4,pigeon.getRotation2d())
+        );
         
         private AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
         public PhotonPipelineResult p_result;
         public PhotonPipelineResult b_result;
+        
 
         //pablo configs                          (X,Y,Z,R,P,Y)
         public double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
@@ -108,13 +153,71 @@ public class DataMgmtSubsystem extends SubsystemBase
             return b_result.getBestTarget();
         }
         
+        public StatusSignal<Angle> getHeading()
+        {
+            return pigeon.getYaw();
+        }
+
+        public void updateDrivetrain(CommandSwerveDrivetrain input)
+        {
+            drivetrain = input;
+        }
+
+        public Translation2d getTranslation()
+        {
+            return drivetrain.getState().Pose.getTranslation();
+        }
+
+        public void addMeasurement(Optional<EstimatedRobotPose> estimate)
+        {
+            poseEstimator.addVisionMeasurement(estimate.get().estimatedPose.toPose2d(), estimate.get().timestampSeconds);
+        }
+
+        public void updateEstimator()
+        {
+
+            positions[0] = drivetrain.getModule(0).getCachedPosition();
+            positions[1] = drivetrain.getModule(1).getCachedPosition();
+            positions[2] = drivetrain.getModule(2).getCachedPosition();
+            positions[3] = drivetrain.getModule(3).getCachedPosition();
+
+            poseEstimator.update(pigeon.getRotation2d(), positions);
+
+            SmartDashboard.putNumber("X", poseEstimator.getEstimatedPosition().getX());
+            SmartDashboard.putNumber("Y", poseEstimator.getEstimatedPosition().getY());
+        }
+
+        public void setupVisionSim()
+        {
+            visionSim.addCamera(sim_pablo, pablo_transform);
+            visionSim.addCamera(sim_baplo, baplo_transform);
+            visionSim.addAprilTags(field_2026);
+        }
+
+        public void updateVisionSim()
+        {
+            Transform2d visionTransform = new Transform2d(drivetrain.getState().Pose.getTranslation(),pigeon.getRotation2d());
+            visionSim.update(pose.transformBy(visionTransform));
+        }
+
+        
+        public void runPositionSim()
+        {
+            m_lastSimTime = Utils.getCurrentTimeSeconds();
+            
+            final double currentTime = Utils.getCurrentTimeSeconds();
+            double deltaTime = currentTime - m_lastSimTime;
+            m_lastSimTime = currentTime;
+            
+            drivetrain.updateSimState(deltaTime, 12);
+        }
 
     }
     
-    public aimStruct    aim     = new aimStruct();
-    public intakeStruct intake  = new intakeStruct();
-    public inputStruct  inputs  = new inputStruct();
-    public cameraStruct cameras = new cameraStruct();
+    public aimStruct    aim        = new aimStruct();
+    public intakeStruct intake     = new intakeStruct();
+    public inputStruct  inputs     = new inputStruct();
+    public positionStruct position = new positionStruct();
 
     public DataMgmtSubsystem()
     {

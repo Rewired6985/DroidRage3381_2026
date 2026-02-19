@@ -7,10 +7,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class CarouselSubsystem extends SubsystemBase
 {
 
-    public CarouselSubsystem(){}
-
     final TalonFX carousel_motor = new TalonFX(14);
     final TalonFX gate_motor = new TalonFX(30);
+
+    public CarouselSubsystem()
+    {
+        
+    }
 
     public void setCarouselSpeed(double speed)
     {
