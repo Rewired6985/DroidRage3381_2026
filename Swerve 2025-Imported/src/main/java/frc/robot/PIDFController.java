@@ -37,7 +37,7 @@ public class PIDFController
         m_ReferenceTime_ms = -(FFWDPeriod + 1);
     }
 
-    public double CalcPIDF()
+    public double CalcPID()
     {
 
         double deltaTime_s = (m_PIDtime_s - m_PIlasttime_s);
@@ -61,27 +61,27 @@ public class PIDFController
         return m_PIDresult;
     }
 
-    public double[] CalcFFWD(double coefficient, double target, double time)
+    public double[] CalcFFWDVelocity(double coefficient, double target, double time_ms)
     {
         if (m_LastCoefficient != coefficient)
         {
             m_FFWDOffset     = m_LastCoefficient;
             m_PositionOffset = m_LastTarget;
-            m_ReferenceTime_ms = time;
+            m_ReferenceTime_ms = time_ms;
         }
 
-        if ((time - m_ReferenceTime_ms) > m_FFWDPeriod_ms)
+        if ((time_ms - m_ReferenceTime_ms) > m_FFWDPeriod_ms)
         {
             m_FFWDResults[0] = coefficient;
             m_FFWDResults[1] = target;
         }
         else
         {
-            m_FFWDResults[0] = (-Math.cos((Math.PI * (time - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
+            m_FFWDResults[0] = (-Math.cos((Math.PI * (time_ms - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
                            ((coefficient - m_FFWDOffset)/2) +
                            m_FFWDOffset;
 
-            m_FFWDResults[1] = (-Math.cos((Math.PI * (time - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
+            m_FFWDResults[1] = (-Math.cos((Math.PI * (time_ms - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
                     ((target - m_PositionOffset)/2) +
                     m_PositionOffset;
         }
@@ -92,25 +92,25 @@ public class PIDFController
         return m_FFWDResults;
     }
 
-    public double[] CalcFFWDPosition(double coefficient, double target, double time)
+    public double[] CalcFFWDPosition(double coefficient, double target, double time_ms)
     {
         if (m_LastTarget != target)
         {
             m_PositionOffset = m_LastTarget;
-            m_ReferenceTime_ms = time;
+            m_ReferenceTime_ms = time_ms;
         }
 
-        if ((time - m_ReferenceTime_ms) > m_FFWDPeriod_ms)
+        if ((time_ms - m_ReferenceTime_ms) > m_FFWDPeriod_ms)
         {
             m_FFWDResults[0] = 0;
             m_FFWDResults[1] = target;
         }
         else
         {
-            m_FFWDResults[0] = (Math.cos((Math.PI * (time - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
+            m_FFWDResults[0] = (Math.cos((Math.PI * (time_ms - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
                     ((coefficient)/2);
 
-            m_FFWDResults[1] = (-Math.cos((Math.PI * (time - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
+            m_FFWDResults[1] = (-Math.cos((Math.PI * (time_ms - m_ReferenceTime_ms))/ m_FFWDPeriod_ms) + 1) *
                     ((target - m_PositionOffset)/2) +
                     m_PositionOffset;
         }

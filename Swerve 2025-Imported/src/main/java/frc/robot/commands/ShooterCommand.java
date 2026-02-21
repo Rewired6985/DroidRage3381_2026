@@ -93,7 +93,7 @@ public class ShooterCommand extends Command
                 if (trigger) useSpeed = shooterSpeed;
                 else         useSpeed = 0;
 
-                if (swivel_left)       turretSpeed = 0.05;
+                if      (swivel_left)  turretSpeed = 0.05;
                 else if (swivel_right) turretSpeed = -0.05;
                 else                   turretSpeed = 0;
                 break;

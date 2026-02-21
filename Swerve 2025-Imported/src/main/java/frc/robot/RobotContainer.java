@@ -103,13 +103,13 @@ public class RobotContainer {
     {
         Trigger brakeTrigger = new Trigger(ms_data::brake);
         Trigger resetField   = new Trigger(ms_data::reset);
-        Trigger switchIntake = new Trigger(ms_data::switchIntake);
+        Trigger callIntake = new Trigger(ms_data::callIntake);
 
         ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, controller));
         ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
         ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, controller));
 
-        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data));
+        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, controller));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -126,7 +126,7 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))
         ));
 
-        switchIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
+        callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
 
 
         // Run SysId routines when holding back/start and X/Y.

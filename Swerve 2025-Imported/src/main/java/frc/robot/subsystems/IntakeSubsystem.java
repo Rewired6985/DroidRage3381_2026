@@ -9,6 +9,7 @@ public class IntakeSubsystem extends SubsystemBase
 {
 
     private SparkMax motor = new SparkMax(8, MotorType.kBrushless);
+    public boolean inDeployMode = false;
 
     public IntakeSubsystem()
     {

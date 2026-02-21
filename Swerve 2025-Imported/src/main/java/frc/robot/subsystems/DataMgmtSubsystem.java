@@ -38,33 +38,6 @@ public class DataMgmtSubsystem extends SubsystemBase
     public Constants.eMode Mode = Constants.eMode.AUTO;
     public boolean inSim = false;
 
-    public class aimStruct
-    {
-        public Constants.eAim state = Constants.eAim.ZERO;
-
-        public boolean hasTarget  = false;
-        public boolean isTracking = false;
-        public boolean inDefense  = false;
-        public boolean inEndgame  = false;
-    }
-
-    public class intakeStruct
-    {
-        public Constants.eIntake state = Constants.eIntake.STOP;
-
-        public boolean inPosition = false;
-        public boolean retractNow = false;
-        public boolean speedZero  = false;
-        public boolean deployNow  = false;
-    }
-
-    public class inputStruct
-    {
-        public boolean brake;
-        public boolean reset;
-        public boolean switchIntake;
-    }
-
     public class positionStruct
     {
 
@@ -183,8 +156,8 @@ public class DataMgmtSubsystem extends SubsystemBase
 
             poseEstimator.update(pigeon.getRotation2d(), positions);
 
-            SmartDashboard.putNumber("X", poseEstimator.getEstimatedPosition().getX());
-            SmartDashboard.putNumber("Y", poseEstimator.getEstimatedPosition().getY());
+            SmartDashboard.putNumber("X", poseEstimator.getEstimatedPosition().getX()*3.28084);
+            SmartDashboard.putNumber("Y", poseEstimator.getEstimatedPosition().getY()*3.28084);
         }
 
         public void setupVisionSim()
@@ -213,9 +186,38 @@ public class DataMgmtSubsystem extends SubsystemBase
         }
 
     }
+
+    public class aimStruct
+    {
+        public Constants.eAim state = Constants.eAim.ZERO;
+
+        public boolean hasTarget  = false;
+        public boolean isTracking = false;
+        public boolean inDefense  = false;
+        public boolean inEndgame  = false;
+
+        public double[] target = {};
+
+        public static final double[] REDHUB   = {39.047, 13.193,  6};
+        public static final double[] LEFTRED  = {46.612, 19.79,   0};
+        public static final double[] RIGHTRED = {46.612,  6.5967, 0};
+
+        public static final double[] BLUEHUB   = {15.13, 13.193,  6};
+        public static final double[] LEFTBLUE  = {7.565, 19.79,   0};
+        public static final double[] RIGHTBLUE = {7.565,  6.5967, 0};
+
+        public static final double[] LEFTNEUTRAL  = {27.088, 19.79,   0};
+        public static final double[] RIGHTNEUTRAL = {27.088,  6.5967, 0};
+    }
+
+    public class inputStruct
+    {
+        public boolean brake;
+        public boolean reset;
+        public boolean callIntake;
+    }
     
     public aimStruct    aim        = new aimStruct();
-    public intakeStruct intake     = new intakeStruct();
     public inputStruct  inputs     = new inputStruct();
     public positionStruct position = new positionStruct();
 
@@ -241,7 +243,8 @@ public class DataMgmtSubsystem extends SubsystemBase
             }
             case FIRE: 
             {
-                if (aim.hasTarget = false) aim.state = Constants.eAim.STANDBY;
+                if (aim.hasTarget  = false) aim.state = Constants.eAim.STANDBY;
+                if (aim.isTracking = false) aim.state = Constants.eAim.STANDBY;
                 break;
             }
             case STANDBY: 
@@ -255,33 +258,6 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     }
 
-    public void IntakeHandler()
-    {
-        switch (intake.state)
-        {
-            case DEPLOY:
-            {
-                if (intake.inPosition) intake.state = Constants.eIntake.RUN;
-                break;
-            }
-            case RUN:
-            {
-                if (intake.retractNow) intake.state = Constants.eIntake.STOP;
-                break;
-            }
-            case STOP:
-            {
-                if (intake.speedZero) intake.state = Constants.eIntake.RETRACT;
-                break;
-            }
-            case RETRACT:
-            {
-                if (intake.deployNow) intake.state = Constants.eIntake.DEPLOY;
-                break;
-            }
-        }
-    }
-
     public boolean brake() 
     {
         return inputs.brake;
@@ -292,9 +268,9 @@ public class DataMgmtSubsystem extends SubsystemBase
         return inputs.reset;
     }
 
-    public boolean switchIntake()
+    public boolean callIntake()
     {
-        return inputs.switchIntake;
+        return inputs.callIntake;
     }
 
 }

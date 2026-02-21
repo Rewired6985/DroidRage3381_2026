@@ -17,13 +17,6 @@ public class Constants
         STANDBY;
     }
 
-    public static enum eIntake
-    {
-        DEPLOY,
-        RETRACT,
-        STOP,
-        RUN;
-    }
     
 
 }

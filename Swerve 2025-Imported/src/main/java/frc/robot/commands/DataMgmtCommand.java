@@ -3,15 +3,9 @@ package frc.robot.commands;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
-
-import com.ctre.phoenix6.StatusSignal;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DataMgmtSubsystem;
 
 public class DataMgmtCommand extends Command
@@ -19,11 +13,13 @@ public class DataMgmtCommand extends Command
 
     private final DataMgmtSubsystem ms_this;
     private Joystick m_joystick;
+    private CommandXboxController m_controller;
     private boolean usingJoystick;
 
-    public DataMgmtCommand(DataMgmtSubsystem subsystem)
+    public DataMgmtCommand(DataMgmtSubsystem subsystem, CommandXboxController controller)
     {
         ms_this = subsystem;
+        m_controller = controller;
         usingJoystick = false;
         addRequirements(subsystem);
     }
@@ -45,8 +41,6 @@ public class DataMgmtCommand extends Command
     @Override
     public void execute()
     {
-        //calls state handlers
-        ms_this.IntakeHandler();
         ms_this.ShotHandler();
 
         boolean pabloResultValid = ms_this.position.getPabloValidity();
@@ -58,7 +52,11 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    ms_this.inputs.switchIntake = true;
+                    if (m_joystick.getRawButton(7)) ms_this.inputs.callIntake = true;
+                }
+                else
+                {
+                    if (m_controller.x().getAsBoolean()) ms_this.inputs.callIntake = true;
                 }
                 break;
             }
