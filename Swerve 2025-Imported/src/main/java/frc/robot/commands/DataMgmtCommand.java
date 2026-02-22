@@ -43,8 +43,10 @@ public class DataMgmtCommand extends Command
     {
         ms_this.ShotHandler();
 
+
         boolean pabloResultValid = ms_this.position.getPabloValidity();
         boolean baploResultValid = ms_this.position.getBaploValidity();
+
 
         switch (ms_this.Mode)
         {
@@ -64,12 +66,6 @@ public class DataMgmtCommand extends Command
             {
                 break;
             }
-        }
-
-        if (ms_this.inSim)
-        {
-            ms_this.position.updateVisionSim();
-            ms_this.position.runPositionSim();
         }
 
 

@@ -23,10 +23,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -37,40 +41,23 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     public Constants.eMode Mode = Constants.eMode.AUTO;
     public boolean inSim = false;
+    public boolean AllianceIsRed = true;
+    private CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
 
     public class positionStruct
     {
 
-        private CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
         private VisionSystemSim visionSim = new VisionSystemSim("test sim");
 
-        public Pose2d pose;
+        public Pose2d initOffset;
+        private Pose2d estimatedPose;
 
         
         private double m_lastSimTime = Utils.getCurrentTimeSeconds();
         
-        SwerveModulePosition[] positions = 
-        {
-        drivetrain.getModules()[0].getCachedPosition(),
-        drivetrain.getModules()[1].getCachedPosition(),
-        drivetrain.getModules()[2].getCachedPosition(),
-        drivetrain.getModules()[3].getCachedPosition()
-        };
-
-        Pigeon2 pigeon = drivetrain.getPigeon2();
-
-        private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator
-        (
-        drivetrain.getKinematics(),  
-        Rotation2d.fromRotations(pigeon.getYaw().getValueAsDouble()),
-        positions,
-        new Pose2d(4.5,4,pigeon.getRotation2d())
-        );
-        
         private AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
         public PhotonPipelineResult p_result;
         public PhotonPipelineResult b_result;
-        
 
         //pablo configs                          (X,Y,Z,R,P,Y)
         public double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
@@ -91,6 +78,25 @@ public class DataMgmtSubsystem extends SubsystemBase
         public SimCameraProperties baploProp   = new SimCameraProperties();
         public PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
         public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
+
+
+        Pigeon2 pigeon = m_drivetrain.getPigeon2();
+
+        SwerveModulePosition[] positions = 
+        {
+            m_drivetrain.getModules()[0].getCachedPosition(),
+            m_drivetrain.getModules()[1].getCachedPosition(),
+            m_drivetrain.getModules()[2].getCachedPosition(),
+            m_drivetrain.getModules()[3].getCachedPosition()
+        };
+
+        private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator
+        (
+            m_drivetrain.getKinematics(),  
+            Rotation2d.fromRotations(pigeon.getYaw().getValueAsDouble()),
+            positions,
+            new Pose2d(4.5,4,pigeon.getRotation2d())
+        );
 
         public PhotonPipelineResult getPabloResult()
         {
@@ -120,7 +126,7 @@ public class DataMgmtSubsystem extends SubsystemBase
 
             return b_result.hasTargets();
         }
-
+   
         public PhotonTrackedTarget getBaploTarget()
         {
             return b_result.getBestTarget();
@@ -133,12 +139,7 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         public void updateDrivetrain(CommandSwerveDrivetrain input)
         {
-            drivetrain = input;
-        }
-
-        public Translation2d getTranslation()
-        {
-            return drivetrain.getState().Pose.getTranslation();
+            m_drivetrain = input;
         }
 
         public void addMeasurement(Optional<EstimatedRobotPose> estimate)
@@ -149,15 +150,27 @@ public class DataMgmtSubsystem extends SubsystemBase
         public void updateEstimator()
         {
 
-            positions[0] = drivetrain.getModule(0).getCachedPosition();
-            positions[1] = drivetrain.getModule(1).getCachedPosition();
-            positions[2] = drivetrain.getModule(2).getCachedPosition();
-            positions[3] = drivetrain.getModule(3).getCachedPosition();
+            positions[0] = m_drivetrain.getModule(0).getCachedPosition();
+            positions[1] = m_drivetrain.getModule(1).getCachedPosition();
+            positions[2] = m_drivetrain.getModule(2).getCachedPosition();
+            positions[3] = m_drivetrain.getModule(3).getCachedPosition();
 
             poseEstimator.update(pigeon.getRotation2d(), positions);
+            estimatedPose = poseEstimator.getEstimatedPosition();
+        }
 
-            SmartDashboard.putNumber("X", poseEstimator.getEstimatedPosition().getX()*3.28084);
-            SmartDashboard.putNumber("Y", poseEstimator.getEstimatedPosition().getY()*3.28084);
+        public double getEstX()
+        {
+            double return_value = (estimatedPose.getX() * 3.2804);
+            SmartDashboard.putNumber("robotX", return_value);
+            return return_value;
+        }
+
+        public double getEstY()
+        {
+            double return_value = (estimatedPose.getY() * 3.2804);
+            SmartDashboard.putNumber("robotY", return_value);
+            return return_value;
         }
 
         public void setupVisionSim()
@@ -169,8 +182,8 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         public void updateVisionSim()
         {
-            Transform2d visionTransform = new Transform2d(drivetrain.getState().Pose.getTranslation(),pigeon.getRotation2d());
-            visionSim.update(pose.transformBy(visionTransform));
+            Transform2d visionTransform = new Transform2d(m_drivetrain.getState().Pose.getTranslation(),pigeon.getRotation2d());
+            visionSim.update(initOffset.transformBy(visionTransform));
         }
 
         
@@ -182,7 +195,7 @@ public class DataMgmtSubsystem extends SubsystemBase
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
             
-            drivetrain.updateSimState(deltaTime, 12);
+            m_drivetrain.updateSimState(deltaTime, 12);
         }
 
     }
@@ -196,24 +209,46 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean inDefense  = false;
         public boolean inEndgame  = false;
 
-        public double[] target = {};
+        public double[] target = {0, 0, 0};
+        public double velocityX = 0;
+        public double velocityY = 0;
+        public double fuelVelocity = 0;
 
-        public static final double[] REDHUB   = {39.047, 13.193,  6};
-        public static final double[] LEFTRED  = {46.612, 19.79,   0};
-        public static final double[] RIGHTRED = {46.612,  6.5967, 0};
+        public double distance = 0;
+        public double flightTime = 0;
 
-        public static final double[] BLUEHUB   = {15.13, 13.193,  6};
-        public static final double[] LEFTBLUE  = {7.565, 19.79,   0};
-        public static final double[] RIGHTBLUE = {7.565,  6.5967, 0};
+        public double angle = 70 * Math.PI / 180;
 
-        public static final double[] LEFTNEUTRAL  = {27.088, 19.79,   0};
-        public static final double[] RIGHTNEUTRAL = {27.088,  6.5967, 0};
+        public final double SHOOTERHEIGHT = 2.208;
+
+        public final double[] REDHUB   = {39.047, 13.193,  6};
+        public final double[] LEFTRED  = {46.612, 19.79,   0};
+        public final double[] RIGHTRED = {46.612,  6.5967, 0};
+
+        public final double[] BLUEHUB   = {15.13, 13.193,  6};
+        public final double[] LEFTBLUE  = {7.565, 19.79,   0};
+        public final double[] RIGHTBLUE = {7.565,  6.5967, 0};
+
+        public final double[] LEFTNEUTRAL  = {27.088, 19.79,   0};
+        public final double[] RIGHTNEUTRAL = {27.088,  6.5967, 0};
+
+        public void updateVelocity()
+        {
+            SwerveDriveKinematics kinematics = m_drivetrain.getKinematics();
+            SwerveModuleState[]   modules = m_drivetrain.getState().ModuleStates;
+            ChassisSpeeds         speeds = kinematics.toChassisSpeeds(modules);
+
+            velocityX = speeds.vxMetersPerSecond;
+            velocityY = speeds.vyMetersPerSecond;
+
+        }
+
     }
 
     public class inputStruct
     {
         public boolean brake;
-        public boolean reset;
+        public boolean resetGyro;
         public boolean callIntake;
     }
     
@@ -221,6 +256,7 @@ public class DataMgmtSubsystem extends SubsystemBase
     public inputStruct  inputs     = new inputStruct();
     public positionStruct position = new positionStruct();
 
+    
     public DataMgmtSubsystem()
     {
 
@@ -258,14 +294,27 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     }
 
+    
+    public void setAlliance()
+    {
+        
+        Optional<Alliance> ally = DriverStation.getAlliance();
+        
+        if (ally.isPresent())
+        {
+            if (ally.get() == Alliance.Blue) AllianceIsRed = false;  
+        }
+
+    }
+
     public boolean brake() 
     {
         return inputs.brake;
     }
 
-    public boolean reset()
+    public boolean resetGyro()
     {
-        return inputs.reset;
+        return inputs.resetGyro;
     }
 
     public boolean callIntake()

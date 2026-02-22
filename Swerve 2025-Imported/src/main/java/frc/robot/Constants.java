@@ -3,6 +3,8 @@ package frc.robot;
 public class Constants 
 {
 
+    public static double GRAVITY = 32.174;
+
     public static enum eMode
     {
         AUTO, 
@@ -16,7 +18,5 @@ public class Constants
         FIRE, 
         STANDBY;
     }
-
-    
 
 }

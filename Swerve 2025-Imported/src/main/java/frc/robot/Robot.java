@@ -104,6 +104,7 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() 
   {
     inSim = true;
+    m_robotContainer.doSimStuff();
     m_robotContainer.updateLogger();
   }
 

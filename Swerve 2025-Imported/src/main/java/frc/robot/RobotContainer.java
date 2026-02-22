@@ -37,6 +37,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -102,7 +104,7 @@ public class RobotContainer {
     private void configureBindings() 
     {
         Trigger brakeTrigger = new Trigger(ms_data::brake);
-        Trigger resetField   = new Trigger(ms_data::reset);
+        Trigger resetField   = new Trigger(ms_data::resetGyro);
         Trigger callIntake = new Trigger(ms_data::callIntake);
 
         ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, controller));
@@ -158,6 +160,8 @@ public class RobotContainer {
         final int choose_right  = 3;
 
         configureBindings();
+        
+        ms_data.setAlliance();
         ms_data.position.setupVisionSim();
 
 
@@ -172,7 +176,7 @@ public class RobotContainer {
     public void updateInitPosition()
     {
         PositionChooserCommand PoseChooser = (PositionChooserCommand) p_chooser.getSelected();
-        ms_data.position.pose = PoseChooser.getInitPosition();
+        ms_data.position.initOffset = PoseChooser.getInitPosition();
     }
             
     public Command getAutonomousCommand() 
@@ -199,6 +203,12 @@ public class RobotContainer {
     public void updateDrivetrain()
     {
         ms_data.position.updateDrivetrain(drivetrain);
+    }
+
+    public void doSimStuff()
+    {
+        ms_data.position.updateVisionSim();
+        ms_data.position.runPositionSim();
     }
 
 

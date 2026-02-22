@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -16,9 +17,11 @@ public class ShooterCommand extends Command
     private CommandXboxController m_controller;
     private boolean usingJoystick;
 
+    private double targetVelocity = 0;
+
     private double shooterSpeed = 0;
-    private int accCounter;
-    private int dclCounter;
+    private int accCounter = 0;
+    private int dclCounter = 0;
 
     public ShooterCommand(ShooterSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -57,6 +60,17 @@ public class ShooterCommand extends Command
         boolean trigger = false;
         boolean swivel_left = false;
         boolean swivel_right = false;
+
+        ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
+                            (Math.cos(ms_data.aim.angle) * 
+                           Math.sqrt((2*(ms_data.aim.SHOOTERHEIGHT - ms_data.aim.target[2] + 
+                                        (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
+                                     (Constants.GRAVITY))));
+
+        targetVelocity = ms_data.aim.fuelVelocity * 57.29578;
+
+        
+        SmartDashboard.putNumber("target velocity", targetVelocity);
 
         switch (ms_data.Mode)
         {
