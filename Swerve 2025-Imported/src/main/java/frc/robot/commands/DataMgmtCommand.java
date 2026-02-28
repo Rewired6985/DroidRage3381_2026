@@ -35,12 +35,13 @@ public class DataMgmtCommand extends Command
     @Override 
     public void initialize()
     {
-        
+
     }
    
     @Override
     public void execute()
     {
+
         ms_this.ShotHandler();
 
 
@@ -54,7 +55,7 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    if (m_joystick.getRawButton(7)) ms_this.inputs.callIntake = true;
+                    if (m_joystick.getRawButton(3)) ms_this.inputs.callIntake = true;
                 }
                 else
                 {

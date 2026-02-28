@@ -140,14 +140,14 @@ public class DrivetrainCommand extends Command
                     inputX = -m_joystick.getY() * 0.9;
                     inputY = -m_joystick.getX() * 0.9;
                     inputR = -m_joystick.getZ() * 0.9;
-                    inputT = ((m_joystick.getThrottle() + 1) * 0.4) + 0.2;
+                    inputT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
-                    ms_this.m_Xswerve = addDeadZone(inputX, 0.02) * inputT;
-                    ms_this.m_Yswerve = addDeadZone(inputY, 0.1)  * inputT;
-                    ms_this.m_Rswerve = addDeadZone(inputR, 0.4)  * inputT;
+                    ms_this.m_Xswerve = addDeadZone(inputX, 0) * inputT;
+                    ms_this.m_Yswerve = addDeadZone(inputY, 0)  * inputT;
+                    ms_this.m_Rswerve = addDeadZone(inputR, 0)  * inputT;
 
-                    ms_data.inputs.brake = m_joystick.getRawButton(3);
-                    ms_data.inputs.resetGyro = m_joystick.getRawButton(5);
+                    ms_data.inputs.brake = m_joystick.getRawButton(4);
+                    ms_data.inputs.resetGyro = m_joystick.getRawButton(13);
 
                 }
                 else

@@ -39,7 +39,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() 
   {
-    m_robotContainer.updateInitPosition();
+    m_robotContainer.updateChooserValues();
   }
 
   @Override
@@ -51,6 +51,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() 
   {
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.setDriveMode(Constants.eMode.AUTO);
     m_robotContainer.setSimState(inSim);

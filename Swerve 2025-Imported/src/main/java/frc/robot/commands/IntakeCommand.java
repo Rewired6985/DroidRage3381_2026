@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.PIDFController;
 import frc.robot.subsystems.DataMgmtSubsystem;
@@ -49,12 +48,12 @@ public class IntakeCommand extends Command
     public void execute()
     {
 
-        double currentTime_ms = Timer.getFPGATimestamp() * 1000;
+        // double currentTime_ms = Timer.getFPGATimestamp() * 1000;
         double currentPosition = ms_this.getEncoder();
-        double m_target = m_pid.CalcFFWDPosition(0, targetPosition, currentTime_ms)[1];
+        // double m_target = m_pid.CalcFFWDPosition(0, targetPosition, currentTime_ms)[1];
 
-        m_pid.m_Error = (m_target - currentPosition);
-        deploySpeed   = m_pid.CalcPID();
+        // m_pid.m_Error = (m_target - currentPosition);
+        // deploySpeed   = m_pid.CalcPID();
 
 
         if ((currentPosition > (targetPosition - targetRange)) && 

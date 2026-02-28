@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.CarouselSubsystem;
@@ -57,10 +58,31 @@ public class CarouselCommand extends Command
                     {
                         ms_this.setCarouselSpeed(0);
                     }
+
+                    if (m_joystick.getRawButton(16))
+                    {
+                        ms_this.setGateSpeed(0.05);
+                    } 
+                    else if (m_joystick.getRawButton(15))
+                    {
+                        ms_this.setGateSpeed(-0.05);
+                    }
+                    else ms_this.setGateSpeed(0);
+
                 }
                 else
                 {
                     ms_this.setCarouselSpeed(m_controller.getRightTriggerAxis());
+
+                    if (m_controller.povUp().getAsBoolean())
+                    {
+                        ms_this.setGateSpeed(0.05);
+                    } 
+                    else if (m_controller.povDown().getAsBoolean())
+                    {
+                        ms_this.setGateSpeed(-0.05);
+                    }
+                    else ms_this.setGateSpeed(0);
                 }
                 break;
             }
@@ -90,6 +112,7 @@ public class CarouselCommand extends Command
             }
         }
 
+        SmartDashboard.putNumber("GatePosition",ms_this.getGatePosition());
     }
 
     @Override

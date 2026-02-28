@@ -78,9 +78,11 @@ public class ShooterCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    accelerate = m_joystick.getRawButton(6);
-                    decelerate = m_joystick.getRawButton(4);
+                    accelerate = m_joystick.getRawButton(5);
+                    decelerate = m_joystick.getRawButton(10);
                     trigger = m_joystick.getRawButton(1);
+                    swivel_left = m_joystick.getRawButton(6);
+                    swivel_right = m_joystick.getRawButton(9);
                 }
                 else 
                 {
@@ -139,11 +141,14 @@ public class ShooterCommand extends Command
         }
 
         
-        SmartDashboard.putNumber("shooter speed",   shooterSpeed);
-        SmartDashboard.putNumber("turret position", ms_this.getTurretPosition());
+        // SmartDashboard.putNumber("shooter speed",   shooterSpeed);
+        // SmartDashboard.putNumber("turret position", ms_this.getTurretPosition());
         ms_this.setShooterSpeed(useSpeed);
         ms_this.setTurretSpeed(turretSpeed);
         
+        SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
+        SmartDashboard.putNumber("ShooterSpeed", useSpeed);
+
     }
 
     @Override

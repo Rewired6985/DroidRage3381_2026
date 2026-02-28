@@ -50,7 +50,6 @@ import frc.robot.commands.CarouselCommand;
 import frc.robot.commands.DataMgmtCommand;
 import frc.robot.commands.DrivetrainCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.PositionChooserCommand;
 import frc.robot.commands.ShooterCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarouselSubsystem;
@@ -89,9 +88,16 @@ public class RobotContainer {
 
     //private final SwerveRequest.RobotCentric rdrive = new SwerveRequest.RobotCentric();
 
-    private final Telemetry logger = new Telemetry(MaxSpeed);
-    SendableChooser<Command> m_chooser = new SendableChooser<>();
-    SendableChooser<Command> p_chooser = new SendableChooser<>();
+    private final Telemetry  logger         = new Telemetry(MaxSpeed);
+
+    SendableChooser<Command> m_chooser        = new SendableChooser<>();
+    SendableChooser<Constants.eInitPose> m_poseChooser    = new SendableChooser<>();
+    SendableChooser<Constants.eAutoGoal> m_targetChooser   = new SendableChooser<>();
+
+    public boolean returnFalse()
+    {
+        return false;
+    }
 
 
     private final CommandXboxController controller  = new CommandXboxController(0);
@@ -101,17 +107,17 @@ public class RobotContainer {
     // private final CommandXboxController a_pac2 = new CommandXboxController(3);
 
 
-    private void configureBindings() 
+    private void configureBindings()
     {
         Trigger brakeTrigger = new Trigger(ms_data::brake);
         Trigger resetField   = new Trigger(ms_data::resetGyro);
         Trigger callIntake = new Trigger(ms_data::callIntake);
 
-        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, controller));
+        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
         ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
-        ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, controller));
+        ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
 
-        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, controller));
+        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, joystick));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -159,24 +165,34 @@ public class RobotContainer {
         final int choose_middle = 2;
         final int choose_right  = 3;
 
+        
+
         configureBindings();
         
         ms_data.setAlliance();
         ms_data.position.setupVisionSim();
 
 
-        p_chooser.setDefaultOption("left",   new PositionChooserCommand(choose_left));
-        p_chooser.addOption("left",          new PositionChooserCommand(choose_left));
-        p_chooser.addOption("middle",        new PositionChooserCommand(choose_middle));
-        p_chooser.addOption("right",         new PositionChooserCommand(choose_right));
-        SmartDashboard.putData(p_chooser);
-        
+        m_poseChooser.setDefaultOption("middle",Constants.eInitPose.MIDDLE);
+        m_poseChooser.addOption("left"         ,Constants.eInitPose.LEFT);
+        m_poseChooser.addOption("middle"       ,Constants.eInitPose.MIDDLE);
+        m_poseChooser.addOption("right"        ,Constants.eInitPose.RIGHT);
+        SmartDashboard.putData("position",     m_poseChooser);
+
+        m_targetChooser.setDefaultOption("no move"   ,Constants.eAutoGoal.NOMOVE);
+        m_targetChooser.addOption("no move"          ,Constants.eAutoGoal.NOMOVE);
+        m_targetChooser.addOption("depot only"       ,Constants.eAutoGoal.DEPOT);
+        m_targetChooser.addOption("outpost only"     ,Constants.eAutoGoal.OUTPOST);
+        m_targetChooser.addOption("depot, outpost"   ,Constants.eAutoGoal.DEPOT_THEN_OUTPOST);
+        m_targetChooser.addOption("outpost, depot"   ,Constants.eAutoGoal.OUTPOST_THEN_DEPOT);
+        SmartDashboard.putData("order"            ,m_targetChooser);
+
     }
 
-    public void updateInitPosition()
+    public void updateChooserValues()
     {
-        PositionChooserCommand PoseChooser = (PositionChooserCommand) p_chooser.getSelected();
-        ms_data.position.initOffset = PoseChooser.getInitPosition();
+        ms_data.position.updateInitPosition(m_poseChooser.getSelected());
+        ms_data.auto.updateParams(m_targetChooser.getSelected());
     }
             
     public Command getAutonomousCommand() 
@@ -210,7 +226,5 @@ public class RobotContainer {
         ms_data.position.updateVisionSim();
         ms_data.position.runPositionSim();
     }
-
-
     
 }

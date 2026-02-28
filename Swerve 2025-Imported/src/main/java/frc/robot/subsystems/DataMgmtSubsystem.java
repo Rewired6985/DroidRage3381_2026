@@ -54,10 +54,19 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         
         private double m_lastSimTime = Utils.getCurrentTimeSeconds();
-        
+
         private AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
-        public PhotonPipelineResult p_result;
-        public PhotonPipelineResult b_result;
+
+        //init positions & rotations
+        final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(180));
+        final Rotation2d redInitRotation  = new Rotation2d(Math.toRadians(0));
+
+        final Pose2d leftBluePosition    = new Pose2d(3.5,5,redInitRotation);
+        final Pose2d middleBluePosition  = new Pose2d(3.5,4,redInitRotation);  
+        final Pose2d rightBluePosition   = new Pose2d(3.5,3,redInitRotation);
+        final Pose2d leftRedPosition     = new Pose2d(13,3,blueInitRotation);
+        final Pose2d middleRedPosition   = new Pose2d(13,4,blueInitRotation);
+        final Pose2d rightRedPosition    = new Pose2d(13,5,blueInitRotation);
 
         //pablo configs                          (X,Y,Z,R,P,Y)
         public double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
@@ -68,6 +77,7 @@ public class DataMgmtSubsystem extends SubsystemBase
         public SimCameraProperties pabloProp   = new SimCameraProperties();
         public PhotonCameraSim sim_pablo       = new PhotonCameraSim(pablo, pabloProp);
         public PhotonPoseEstimator pablo_estimator   = new PhotonPoseEstimator(field_2026, pablo_transform);
+        public PhotonPipelineResult p_result;
 
         //baplo configs                           (X,Y,Z,R,P,Y)
         public double[] baplo_pos              = {0.1,0.1,0.1,0,-15,-15};
@@ -78,8 +88,10 @@ public class DataMgmtSubsystem extends SubsystemBase
         public SimCameraProperties baploProp   = new SimCameraProperties();
         public PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
         public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
+        public PhotonPipelineResult b_result;
 
 
+        //variables for setting up simulated drivetrain
         Pigeon2 pigeon = m_drivetrain.getPigeon2();
 
         SwerveModulePosition[] positions = 
@@ -198,6 +210,44 @@ public class DataMgmtSubsystem extends SubsystemBase
             m_drivetrain.updateSimState(deltaTime, 12);
         }
 
+        
+        public void updateInitPosition(Constants.eInitPose position)
+        {
+            Optional<Alliance> ally = DriverStation.getAlliance();
+            boolean AllianceIsRed = true;
+            Pose2d pose = new Pose2d();
+
+            if (ally.isPresent())
+            {
+                if (ally.get() == Alliance.Blue) AllianceIsRed = false;  
+            }
+
+            switch (position)
+            {
+                case LEFT:
+                {
+                    if (AllianceIsRed) pose = leftRedPosition;
+                    else               pose = leftBluePosition;
+                    break;
+                }
+                case MIDDLE:
+                {
+                    if (AllianceIsRed) pose = middleRedPosition;
+                    else               pose = middleBluePosition;
+                    break;
+                }
+                case RIGHT:
+                {
+                    if (AllianceIsRed) pose = rightRedPosition;
+                    else               pose = rightBluePosition;
+                    break;
+                }
+            }
+
+            initOffset = pose;
+
+        }
+
     }
 
     public class aimStruct
@@ -251,10 +301,61 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean resetGyro;
         public boolean callIntake;
     }
+
+    public class autoStruct
+    {
+        public boolean doDepot   = false;
+        public boolean doOutpost = false;
+
+        public boolean beginRest = false;
+        public boolean atCenter = false;
+        public boolean atDepot = false;
+        public boolean atOutpost = false;
+        public boolean depotCollected = false;
+        public boolean outpostCollected = false;
+
+        public boolean depotFirst   = false;
+        public boolean outpostFirst = false;
+
+        public Constants.eAutoGoal Target = Constants.eAutoGoal.NOMOVE;
+
+
+        public Constants.eAuto state = Constants.eAuto.REST;
+
+        public void updateParams(Constants.eAutoGoal objective)
+        {
+            switch (objecti)
+            {
+                
+                case NOMOVE:
+                {
+                    break;
+                }
+                case DEPOT:
+                {
+                    break;
+                }
+                case OUTPOST:
+                {
+                    break;
+                }
+                case DEPOT_THEN_OUTPOST:
+                {
+                    break;
+                }
+                case OUTPOST_THEN_DEPOT:
+                {
+                    break;
+                }
+            }
+        }
+        
+    }
     
-    public aimStruct    aim        = new aimStruct();
-    public inputStruct  inputs     = new inputStruct();
+    public aimStruct      aim      = new aimStruct();
+    public inputStruct    inputs   = new inputStruct();
     public positionStruct position = new positionStruct();
+    public autoStruct     auto     = new autoStruct();
 
     
     public DataMgmtSubsystem()
@@ -292,6 +393,64 @@ public class DataMgmtSubsystem extends SubsystemBase
             }
         }
 
+    }
+
+    public void autoHandler()
+    {
+        switch (auto.state)
+        {
+            case REST:
+            {
+                if ((auto.doOutpost && (auto.outpostCollected == false)) ||
+                    (auto.doDepot   && (auto.depotCollected   == false))) auto.state = Constants.eAuto.TOCENTER;
+                break;
+            }
+            case TODEPOT:
+            {
+                if (auto.atDepot) auto.state = Constants.eAuto.COLLECTDEPOT;
+                break;
+            }
+            case TOOUTPOST:
+            {
+                if (auto.atOutpost) auto.state = Constants.eAuto.COLLECTOUTPOST;
+                break;
+            }
+            case TOCENTER:
+            {
+                if (auto.atCenter)
+                {
+                    if (auto.depotFirst)
+                    {
+                        if (auto.depotCollected) auto.state = Constants.eAuto.TOOUTPOST;
+                        else                     auto.state = Constants.eAuto.TODEPOT;
+                    }
+                    else if (auto.outpostFirst)
+                    {
+                        if (auto.outpostCollected) auto.state = Constants.eAuto.TODEPOT;
+                        else                       auto.state = Constants.eAuto.TOOUTPOST;
+                    }
+                }
+                break;
+            }
+            case COLLECTDEPOT:
+            {
+                if (auto.depotCollected)
+                {
+                    if (auto.depotFirst) auto.state = Constants.eAuto.TOCENTER;
+                    else                 auto.state = Constants.eAuto.REST;
+                }
+                break;
+            }
+            case COLLECTOUTPOST:
+            {
+                if (auto.outpostCollected)
+                {
+                    if (auto.outpostFirst) auto.state = Constants.eAuto.TOCENTER;
+                    else                   auto.state = Constants.eAuto.REST;
+                }
+                break;
+            }
+        }
     }
 
     

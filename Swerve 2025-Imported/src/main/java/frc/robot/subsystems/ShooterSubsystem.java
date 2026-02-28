@@ -14,7 +14,7 @@ public class ShooterSubsystem extends SubsystemBase
     final TalonFX right_motor = new TalonFX(8);
     final TalonFX left_motor  = new TalonFX(9);
     final Servo hood_servo = new Servo(3);
-    final SparkMax turret_motor = new SparkMax(4, MotorType.kBrushless);
+    final SparkMax turret_motor = new SparkMax(6, MotorType.kBrushless);
     final RelativeEncoder turret_encoder;
 
     public ShooterSubsystem()

@@ -19,4 +19,14 @@ public class Constants
         STANDBY;
     }
 
+    public static enum eAuto
+    {
+        REST,
+        TODEPOT,
+        COLLECTDEPOT,
+        TOOUTPOST,
+        COLLECTOUTPOST,
+        TOCENTER
+    }
+
 }
