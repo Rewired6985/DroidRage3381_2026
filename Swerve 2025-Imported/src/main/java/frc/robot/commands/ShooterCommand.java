@@ -63,14 +63,14 @@ public class ShooterCommand extends Command
 
         ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
                             (Math.cos(ms_data.aim.angle) * 
-                           Math.sqrt((2*(ms_data.aim.SHOOTERHEIGHT - ms_data.aim.target[2] + 
+                           Math.sqrt((2*(Constants.SHOOTERHEIGHT - ms_data.aim.target[2] + 
                                         (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
                                      (Constants.GRAVITY))));
 
         targetVelocity = ms_data.aim.fuelVelocity * 57.29578;
 
         
-        SmartDashboard.putNumber("target velocity", targetVelocity);
+        // SmartDashboard.putNumber("target velocity", targetVelocity);
 
         switch (ms_data.Mode)
         {
@@ -103,7 +103,7 @@ public class ShooterCommand extends Command
                 if (accCounter == 1) shooterSpeed = shooterSpeed + 0.05;
                 if (dclCounter == 1) shooterSpeed = shooterSpeed - 0.05;
                 
-                if (shooterSpeed > 1) shooterSpeed = 1;
+                if (shooterSpeed > 0.95) shooterSpeed = 0.95;
                 if (shooterSpeed < 0) shooterSpeed = 0;
                 
                 if (trigger) useSpeed = shooterSpeed;
@@ -146,8 +146,8 @@ public class ShooterCommand extends Command
         ms_this.setShooterSpeed(useSpeed);
         ms_this.setTurretSpeed(turretSpeed);
         
-        SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
-        SmartDashboard.putNumber("ShooterSpeed", useSpeed);
+        // SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
+        // SmartDashboard.putNumber("ShooterSpeed", useSpeed);
 
     }
 

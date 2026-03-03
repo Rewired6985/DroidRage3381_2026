@@ -5,22 +5,55 @@ import java.lang.Math;
 public class PIDFController
 {
 
+    //TODO add docs, add functions for setting variables
+
+    /**
+     * Proportional gain
+     */
     public double m_Kp;
+    /**
+     * Integral gain
+     */
     public double m_Ki;
+    /**
+     * Derivative gain
+     */
     public double m_Kd;
+    /**
+     * Minimum output that is intended in the system (e.g. a Falcon should never have an output that is less than -0.95, or it may redline)
+     */
     public double m_LimitMin = -1;
+    /**
+     * Maximum output that is intended in the system (e.g. a Falcon should never have an output that is greater than 0.95, or it may redline)
+     */
     public double m_LimitMax =  1;
-    public double m_LastTarget;
-    public double m_PositionOffset;
+    /**
+     * internal variable; stores previous target for generating trajectories
+     */
+    private double m_LastTarget;
+
+    /**
+     * internal variable; used for storing position FFWD offsets
+     */
+    private double m_PositionOffset;
+
+    /**
+     * dev tool; used for troubleshooting 
+     */
     public double m_PIDresult;
+    /**
+     * difference between target position and current position
+     */
     public double m_Error = 0;
+    /**
+     * internal variable; used for calculating derivative
+     */
     public double m_LastError = 0;
 
     public double m_Iterm = 0;
     public double m_Dterm = 0;
 
-    public double m_PIDtime_s = 0;
-    public double m_PIlasttime_s = 0;
+    public double m_PIDlasttime_s = 0;
 
     public double m_FFWDPeriod_ms;
     public double m_LastCoefficient;
@@ -28,20 +61,32 @@ public class PIDFController
     public double m_FFWDOffset;
     public double[] m_FFWDResults = {0,0};
 
-    public PIDFController(double Kp, double Ki, double Kd, double FFWDPeriod)
+    /**
+     * 
+     * @param Kp
+     * @param Ki
+     * @param Kd
+     * @param FFWDPeriod
+     */
+    public PIDFController(double Kp, double Ki, double Kd, double FFWDPeriod_ms)
     {
         m_Kp            = Kp;
         m_Ki            = Ki;
         m_Kd            = Kd;
-        m_FFWDPeriod_ms = FFWDPeriod;
-        m_ReferenceTime_ms = -(FFWDPeriod + 1);
+        m_FFWDPeriod_ms = FFWDPeriod_ms;
+        m_ReferenceTime_ms = -(FFWDPeriod_ms + 1);
     }
 
-    public double CalcPID()
+    /**
+     * Calculates a PID value using the constants from the declaration of the PIDFController. 
+     * @return sum of the Pterm, Iterm, Dterm
+     * @param time_s (current system time, in seconds)
+     */
+    public double CalcPID(double time_s)
     {
 
-        double deltaTime_s = (m_PIDtime_s - m_PIlasttime_s);
-        m_PIlasttime_s = m_PIDtime_s;
+        double deltaTime_s = (time_s - m_PIDlasttime_s);
+        m_PIDlasttime_s = time_s;
 
         m_Iterm = m_Iterm + ((m_Error * deltaTime_s) * m_Ki);
 

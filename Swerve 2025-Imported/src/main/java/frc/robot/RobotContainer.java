@@ -92,7 +92,7 @@ public class RobotContainer {
 
     SendableChooser<Command> m_chooser        = new SendableChooser<>();
     SendableChooser<Constants.eInitPose> m_poseChooser    = new SendableChooser<>();
-    SendableChooser<Constants.eAutoGoal> m_targetChooser   = new SendableChooser<>();
+    SendableChooser<Constants.eAutoGoal> m_goalChooser   = new SendableChooser<>();
 
     public boolean returnFalse()
     {
@@ -179,20 +179,21 @@ public class RobotContainer {
         m_poseChooser.addOption("right"        ,Constants.eInitPose.RIGHT);
         SmartDashboard.putData("position",     m_poseChooser);
 
-        m_targetChooser.setDefaultOption("no move"   ,Constants.eAutoGoal.NOMOVE);
-        m_targetChooser.addOption("no move"          ,Constants.eAutoGoal.NOMOVE);
-        m_targetChooser.addOption("depot only"       ,Constants.eAutoGoal.DEPOT);
-        m_targetChooser.addOption("outpost only"     ,Constants.eAutoGoal.OUTPOST);
-        m_targetChooser.addOption("depot, outpost"   ,Constants.eAutoGoal.DEPOT_THEN_OUTPOST);
-        m_targetChooser.addOption("outpost, depot"   ,Constants.eAutoGoal.OUTPOST_THEN_DEPOT);
-        SmartDashboard.putData("order"            ,m_targetChooser);
+        m_goalChooser.setDefaultOption("no move"   ,Constants.eAutoGoal.NOMOVE);
+        m_goalChooser.addOption("no move"          ,Constants.eAutoGoal.NOMOVE);
+        m_goalChooser.addOption("depot only"       ,Constants.eAutoGoal.DEPOT);
+        m_goalChooser.addOption("outpost only"     ,Constants.eAutoGoal.OUTPOST);
+        m_goalChooser.addOption("depot, outpost"   ,Constants.eAutoGoal.DEPOT_THEN_OUTPOST);
+        m_goalChooser.addOption("outpost, depot"   ,Constants.eAutoGoal.OUTPOST_THEN_DEPOT);
+        SmartDashboard.putData("goal"            ,m_goalChooser);
 
     }
 
     public void updateChooserValues()
     {
         ms_data.position.updateInitPosition(m_poseChooser.getSelected());
-        ms_data.auto.updateParams(m_targetChooser.getSelected());
+        ms_drivetrain.updateParams(m_goalChooser.getSelected());
+        SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
     }
             
     public Command getAutonomousCommand() 

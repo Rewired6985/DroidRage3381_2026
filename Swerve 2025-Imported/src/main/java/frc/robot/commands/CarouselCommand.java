@@ -112,7 +112,7 @@ public class CarouselCommand extends Command
             }
         }
 
-        SmartDashboard.putNumber("GatePosition",ms_this.getGatePosition());
+        // SmartDashboard.putNumber("GatePosition",ms_this.getGatePosition());
     }
 
     @Override

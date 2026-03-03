@@ -33,23 +33,25 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.Constants.eAim;
+import frc.robot.Constants.eInitPose;
+import frc.robot.Constants.eMode;
 import frc.robot.generated.TunerConstants;
 
 public class DataMgmtSubsystem extends SubsystemBase
 {
 
-    public Constants.eMode Mode = Constants.eMode.AUTO;
+    public eMode Mode = eMode.AUTO;
     public boolean inSim = false;
     public boolean AllianceIsRed = true;
-    private CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
+    public CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
 
     public class positionStruct
     {
 
         private VisionSystemSim visionSim = new VisionSystemSim("test sim");
 
-        public Pose2d initOffset;
+        private Pose2d initOffset;
         private Pose2d estimatedPose;
 
         
@@ -69,24 +71,24 @@ public class DataMgmtSubsystem extends SubsystemBase
         final Pose2d rightRedPosition    = new Pose2d(13,5,blueInitRotation);
 
         //pablo configs                          (X,Y,Z,R,P,Y)
-        public double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
-        public PhotonCamera pablo              = new PhotonCamera("DR3381_pablo");
-        public Translation3d pablo_translation = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
-        public Rotation3d    pablo_rotation    = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
-        public Transform3d   pablo_transform   = new Transform3d(pablo_translation, pablo_rotation);
-        public SimCameraProperties pabloProp   = new SimCameraProperties();
-        public PhotonCameraSim sim_pablo       = new PhotonCameraSim(pablo, pabloProp);
+        private double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
+        private PhotonCamera pablo              = new PhotonCamera("DR3381_pablo");
+        private Translation3d pablo_translation = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
+        private Rotation3d    pablo_rotation    = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
+        private Transform3d   pablo_transform   = new Transform3d(pablo_translation, pablo_rotation);
+        private SimCameraProperties pabloProp   = new SimCameraProperties();
+        private PhotonCameraSim sim_pablo       = new PhotonCameraSim(pablo, pabloProp);
         public PhotonPoseEstimator pablo_estimator   = new PhotonPoseEstimator(field_2026, pablo_transform);
         public PhotonPipelineResult p_result;
 
         //baplo configs                           (X,Y,Z,R,P,Y)
-        public double[] baplo_pos              = {0.1,0.1,0.1,0,-15,-15};
-        public PhotonCamera baplo              = new PhotonCamera("DR3381_baplo");
-        public Translation3d baplo_translation = new Translation3d(baplo_pos[0],baplo_pos[1],baplo_pos[2]);
-        public Rotation3d    baplo_rotation    = new Rotation3d(Math.toRadians(baplo_pos[3]),Math.toRadians(baplo_pos[4]),Math.toRadians(baplo_pos[5]));
-        public Transform3d   baplo_transform   = new Transform3d(baplo_translation, baplo_rotation);
-        public SimCameraProperties baploProp   = new SimCameraProperties();
-        public PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
+        private double[] baplo_pos              = {0.1,0.1,0.1,0,-15,-15};
+        private PhotonCamera baplo              = new PhotonCamera("DR3381_baplo");
+        private Translation3d baplo_translation = new Translation3d(baplo_pos[0],baplo_pos[1],baplo_pos[2]);
+        private Rotation3d    baplo_rotation    = new Rotation3d(Math.toRadians(baplo_pos[3]),Math.toRadians(baplo_pos[4]),Math.toRadians(baplo_pos[5]));
+        private Transform3d   baplo_transform   = new Transform3d(baplo_translation, baplo_rotation);
+        private SimCameraProperties baploProp   = new SimCameraProperties();
+        private PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
         public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
         public PhotonPipelineResult b_result;
 
@@ -211,7 +213,7 @@ public class DataMgmtSubsystem extends SubsystemBase
         }
 
         
-        public void updateInitPosition(Constants.eInitPose position)
+        public void updateInitPosition(eInitPose position)
         {
             Optional<Alliance> ally = DriverStation.getAlliance();
             boolean AllianceIsRed = true;
@@ -252,7 +254,7 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     public class aimStruct
     {
-        public Constants.eAim state = Constants.eAim.ZERO;
+        public eAim state = eAim.ZERO;
 
         public boolean hasTarget  = false;
         public boolean isTracking = false;
@@ -268,19 +270,6 @@ public class DataMgmtSubsystem extends SubsystemBase
         public double flightTime = 0;
 
         public double angle = 70 * Math.PI / 180;
-
-        public final double SHOOTERHEIGHT = 2.208;
-
-        public final double[] REDHUB   = {39.047, 13.193,  6};
-        public final double[] LEFTRED  = {46.612, 19.79,   0};
-        public final double[] RIGHTRED = {46.612,  6.5967, 0};
-
-        public final double[] BLUEHUB   = {15.13, 13.193,  6};
-        public final double[] LEFTBLUE  = {7.565, 19.79,   0};
-        public final double[] RIGHTBLUE = {7.565,  6.5967, 0};
-
-        public final double[] LEFTNEUTRAL  = {27.088, 19.79,   0};
-        public final double[] RIGHTNEUTRAL = {27.088,  6.5967, 0};
 
         public void updateVelocity()
         {
@@ -302,60 +291,9 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean callIntake;
     }
 
-    public class autoStruct
-    {
-        public boolean doDepot   = false;
-        public boolean doOutpost = false;
-
-        public boolean beginRest = false;
-        public boolean atCenter = false;
-        public boolean atDepot = false;
-        public boolean atOutpost = false;
-        public boolean depotCollected = false;
-        public boolean outpostCollected = false;
-
-        public boolean depotFirst   = false;
-        public boolean outpostFirst = false;
-
-        public Constants.eAutoGoal Target = Constants.eAutoGoal.NOMOVE;
-
-
-        public Constants.eAuto state = Constants.eAuto.REST;
-
-        public void updateParams(Constants.eAutoGoal objective)
-        {
-            switch (objecti)
-            {
-                
-                case NOMOVE:
-                {
-                    break;
-                }
-                case DEPOT:
-                {
-                    break;
-                }
-                case OUTPOST:
-                {
-                    break;
-                }
-                case DEPOT_THEN_OUTPOST:
-                {
-                    break;
-                }
-                case OUTPOST_THEN_DEPOT:
-                {
-                    break;
-                }
-            }
-        }
-        
-    }
-    
     public aimStruct      aim      = new aimStruct();
     public inputStruct    inputs   = new inputStruct();
     public positionStruct position = new positionStruct();
-    public autoStruct     auto     = new autoStruct();
 
     
     public DataMgmtSubsystem()
@@ -370,87 +308,29 @@ public class DataMgmtSubsystem extends SubsystemBase
         {
             case ZERO: 
             {
-                if (aim.hasTarget) aim.state = Constants.eAim.HUNT;
+                if (aim.hasTarget) aim.state = eAim.HUNT;
                 break;
             }
             case HUNT:
             {
-                if (aim.isTracking) aim.state = Constants.eAim.STANDBY;
+                if (aim.isTracking) aim.state = eAim.STANDBY;
                 break;
             }
             case FIRE: 
             {
-                if (aim.hasTarget  = false) aim.state = Constants.eAim.STANDBY;
-                if (aim.isTracking = false) aim.state = Constants.eAim.STANDBY;
+                if (aim.hasTarget  = false) aim.state = eAim.STANDBY;
+                if (aim.isTracking = false) aim.state = eAim.STANDBY;
                 break;
             }
             case STANDBY: 
             {
-                if (aim.hasTarget) aim.state = Constants.eAim.FIRE;
-                if (aim.inDefense) aim.state = Constants.eAim.ZERO;
-                if (aim.inEndgame) aim.state = Constants.eAim.ZERO;
+                if (aim.hasTarget) aim.state = eAim.FIRE;
+                if (aim.inDefense) aim.state = eAim.ZERO;
+                if (aim.inEndgame) aim.state = eAim.ZERO;
                 break;
             }
         }
 
-    }
-
-    public void autoHandler()
-    {
-        switch (auto.state)
-        {
-            case REST:
-            {
-                if ((auto.doOutpost && (auto.outpostCollected == false)) ||
-                    (auto.doDepot   && (auto.depotCollected   == false))) auto.state = Constants.eAuto.TOCENTER;
-                break;
-            }
-            case TODEPOT:
-            {
-                if (auto.atDepot) auto.state = Constants.eAuto.COLLECTDEPOT;
-                break;
-            }
-            case TOOUTPOST:
-            {
-                if (auto.atOutpost) auto.state = Constants.eAuto.COLLECTOUTPOST;
-                break;
-            }
-            case TOCENTER:
-            {
-                if (auto.atCenter)
-                {
-                    if (auto.depotFirst)
-                    {
-                        if (auto.depotCollected) auto.state = Constants.eAuto.TOOUTPOST;
-                        else                     auto.state = Constants.eAuto.TODEPOT;
-                    }
-                    else if (auto.outpostFirst)
-                    {
-                        if (auto.outpostCollected) auto.state = Constants.eAuto.TODEPOT;
-                        else                       auto.state = Constants.eAuto.TOOUTPOST;
-                    }
-                }
-                break;
-            }
-            case COLLECTDEPOT:
-            {
-                if (auto.depotCollected)
-                {
-                    if (auto.depotFirst) auto.state = Constants.eAuto.TOCENTER;
-                    else                 auto.state = Constants.eAuto.REST;
-                }
-                break;
-            }
-            case COLLECTOUTPOST:
-            {
-                if (auto.outpostCollected)
-                {
-                    if (auto.outpostFirst) auto.state = Constants.eAuto.TOCENTER;
-                    else                   auto.state = Constants.eAuto.REST;
-                }
-                break;
-            }
-        }
     }
 
     

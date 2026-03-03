@@ -1,9 +1,12 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants;
+import frc.robot.PIDFController;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
@@ -12,10 +15,28 @@ public class DrivetrainCommand extends Command
 
     private final DrivetrainSubsystem ms_this;
     private final DataMgmtSubsystem   ms_data;
+
     
     private Joystick m_joystick;
     private CommandXboxController m_controller;
     private boolean usingJoystick;
+
+    
+    private static double[] BYBLUEDEPOT   = {3.542, 20.812, 0};
+    private static double[] BLUEDEPOT     = {1.292, 20.812, 0};
+    private static double[] BLUEOUTPOST   = {1.292,  3.427, 0};
+    private static double[] BLUECENTER    = {6.609, 13.237, 0};
+
+    private static double[] BYREDDEPOT   = {0, 0, 0};
+    private static double[] REDDEPOT     = {0, 0, 0};
+    private static double[] REDOUTPOST   = {0, 0, 0};
+    private static double[] REDCENTER    = {0, 0, 0};
+
+    private static double acceptanceRange = 2.5;
+
+    private PIDFController m_Xpid = new PIDFController(0.05,0,0,0);
+    private PIDFController m_Ypid = new PIDFController(0.05,0,0,0);
+    private PIDFController m_Rpid = new PIDFController(0.05,0,0,0);
 
     public DrivetrainCommand(DrivetrainSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -38,7 +59,10 @@ public class DrivetrainCommand extends Command
     @Override
     public void initialize() 
     {
-        
+        // double time = Timer.getFPGATimestamp();
+        // m_Xpid.m_PIDlasttime_s = time;
+        // m_Ypid.m_PIDlasttime_s = time;
+        // m_Rpid.m_PIDlasttime_s = time;
     }
 
     @Override
@@ -48,7 +72,7 @@ public class DrivetrainCommand extends Command
         ms_data.aim.updateVelocity();
         double positionX = ms_data.position.getEstX();
         double positionY = ms_data.position.getEstY();
-        // double heading   = ms_data.position.getHeading().getValueAsDouble();
+        double positionR   = ms_data.position.getHeading().getValueAsDouble();
         double velocityX = ms_data.aim.velocityX;
         double velocityY = ms_data.aim.velocityY;
 
@@ -57,61 +81,66 @@ public class DrivetrainCommand extends Command
         double vectorI   = (ms_data.aim.flightTime * velocityX);
         double vectorJ   = (ms_data.aim.flightTime * velocityY);
 
+        double driveTargetX = 0;
+        double driveTargetY = 0;
+        double driveTargetR = 0;
+
+        double systemTime = Timer.getFPGATimestamp();
+
         
-        SmartDashboard.putNumber("distanceX", distanceX);
-        SmartDashboard.putNumber("distanceY", distanceY);
+        // SmartDashboard.putNumber("distanceX", distanceX);
+        // SmartDashboard.putNumber("distanceY", distanceY);
 
-        SmartDashboard.putBoolean("hasTarget?", ms_data.aim.hasTarget);
-        SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
-        SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
-        SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
+        // SmartDashboard.putBoolean("hasTarget?", ms_data.aim.hasTarget);
+        // SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
+        // SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
+        // SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
 
-        SmartDashboard.putNumber("distance", ms_data.aim.distance);
-
+        // SmartDashboard.putNumber("distance", ms_data.aim.distance);
 
 
         boolean allyRed = ms_data.AllianceIsRed;
         boolean inAllianceZone = false;
         
 
-        double inputX = 0;
-        double inputY = 0;
-        double inputR = 0;
-        double inputT = 0;
+        double driverX = 0;
+        double driverY = 0;
+        double driverR = 0;
+        double driverT = 1;
 
         if (allyRed)
         {
             if      (positionX > 40.880) 
             {
-                ms_data.aim.target = ms_data.aim.REDHUB;
+                ms_data.aim.target = Constants.shot_REDHUB;
                 inAllianceZone = true;
             }
             else if (positionX > 15.13)
             {
-                if (positionY > 13.139) ms_data.aim.target = ms_data.aim.LEFTRED;
-                else                    ms_data.aim.target = ms_data.aim.RIGHTRED;
+                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTRED;
+                else                    ms_data.aim.target = Constants.shot_RIGHTRED;
             }
             else
             {
-                if (positionY > 13.139) ms_data.aim.target = ms_data.aim.LEFTNEUTRAL; 
-                else                    ms_data.aim.target = ms_data.aim.RIGHTNEUTRAL;
+                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTNEUTRAL; 
+                else                    ms_data.aim.target = Constants.shot_RIGHTNEUTRAL;
             }
         }
         else
         {
             if (positionX > 39.047)
             {
-                if (positionY > 13.139) ms_data.aim.target = ms_data.aim.LEFTNEUTRAL;
-                else                    ms_data.aim.target = ms_data.aim.RIGHTNEUTRAL;
+                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTNEUTRAL;
+                else                    ms_data.aim.target = Constants.shot_RIGHTNEUTRAL;
             }
             else if (positionX > 15.13)
             {
-                if (positionY > 13.139) ms_data.aim.target = ms_data.aim.LEFTBLUE;
-                else                    ms_data.aim.target = ms_data.aim.RIGHTBLUE;
+                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTBLUE;
+                else                    ms_data.aim.target = Constants.shot_RIGHTBLUE;
             }
             else if (positionX < 13.297)         
             {
-                ms_data.aim.target = ms_data.aim.BLUEHUB;
+                ms_data.aim.target = Constants.shot_BLUEHUB;
                 inAllianceZone = true;
             }
         }
@@ -137,14 +166,10 @@ public class DrivetrainCommand extends Command
             {
                 if (usingJoystick) 
                 {
-                    inputX = -m_joystick.getY() * 0.9;
-                    inputY = -m_joystick.getX() * 0.9;
-                    inputR = -m_joystick.getZ() * 0.9;
-                    inputT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
-
-                    ms_this.m_Xswerve = addDeadZone(inputX, 0) * inputT;
-                    ms_this.m_Yswerve = addDeadZone(inputY, 0)  * inputT;
-                    ms_this.m_Rswerve = addDeadZone(inputR, 0)  * inputT;
+                    driverX = -m_joystick.getY() * 0.9;
+                    driverY = -m_joystick.getX() * 0.9;
+                    driverR = -m_joystick.getZ() * 0.9;
+                    driverT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
                     ms_data.inputs.brake = m_joystick.getRawButton(4);
                     ms_data.inputs.resetGyro = m_joystick.getRawButton(13);
@@ -152,19 +177,79 @@ public class DrivetrainCommand extends Command
                 }
                 else
                 {
-                    inputX = -m_controller.getRightY() * 0.7;
-                    inputY = -m_controller.getRightX() * 0.7;
-                    inputR = -m_controller.getLeftX()  * 0.7;
-
-                    ms_this.m_Xswerve = addDeadZone(inputX, 0);
-                    ms_this.m_Yswerve = addDeadZone(inputY, 0);
-                    ms_this.m_Rswerve = addDeadZone(inputR, 0);
+                    driverX = -m_controller.getRightY() * 0.7;
+                    driverY = -m_controller.getRightX() * 0.7;
+                    driverR = -m_controller.getLeftX()  * 0.7;
                 }
 
                 break;
             }
             case AUTO:
             {
+                ms_this.autoHandler();
+
+                switch (ms_this.state)
+                {
+                    case REST: 
+                    {
+                        driveTargetX = positionX; 
+                        driveTargetY = positionY; 
+                        break;
+                    }
+                    case TODEPOT:
+                    {
+                        if (allyRed) { driveTargetX = BYREDDEPOT[0];  driveTargetY = BYREDDEPOT[1];  driveTargetR = BYREDDEPOT[2];}
+                        else         { driveTargetX = BYBLUEDEPOT[0]; driveTargetY = BYBLUEDEPOT[1]; driveTargetR = BYBLUEDEPOT[2];}
+                        break;
+                    }
+                    case TOCENTER:
+                    {
+                        if (allyRed) { driveTargetX = REDCENTER[0];  driveTargetY = REDCENTER[1];  driveTargetR = REDCENTER[2];}
+                        else         { driveTargetX = BLUECENTER[0]; driveTargetY = BLUECENTER[1]; driveTargetR = BLUECENTER[2];}
+                        break;
+                    }
+                    case TOOUTPOST:
+                    {
+                        if (allyRed) { driveTargetX = REDOUTPOST[0];  driveTargetY = REDOUTPOST[1];  driveTargetR = REDOUTPOST[2];}
+                        else         { driveTargetX = BLUEOUTPOST[0]; driveTargetY = BLUEOUTPOST[1]; driveTargetR = BLUEOUTPOST[2];}
+                        break;
+                    }
+                    case COLLECTDEPOT:
+                    {
+                        if (allyRed) { driveTargetX = REDDEPOT[0];  driveTargetY = REDDEPOT[1];  driveTargetR = REDDEPOT[2];}
+                        else         { driveTargetX = BLUEDEPOT[0]; driveTargetY = BLUEDEPOT[1]; driveTargetR = BLUEDEPOT[2];}
+                        break;
+                    }
+                    case COLLECTOUTPOST:
+                    {
+                        if (allyRed) { driveTargetX = REDDEPOT[0];  driveTargetY = REDDEPOT[1];  driveTargetR = REDDEPOT[2];}
+                        else         { driveTargetX = BLUEDEPOT[0]; driveTargetY = BLUEDEPOT[1]; driveTargetR = BLUEDEPOT[2];}
+                        break;
+                    }
+                }
+
+                if ((positionX > (driveTargetX - acceptanceRange) && 
+                     positionX < (driveTargetX + acceptanceRange)) && 
+                    (positionY > (driveTargetY - acceptanceRange) && 
+                     positionY < (driveTargetY + acceptanceRange))) ms_this.inPosition = true;
+                else                                                ms_this.inPosition = false;
+
+                SmartDashboard.putNumber("targetX", driveTargetX);
+                SmartDashboard.putNumber("targetY", driveTargetY);
+                SmartDashboard.putString("state",ms_this.state.toString());
+
+
+
+
+                m_Xpid.m_Error = (driveTargetX - positionX);
+                m_Ypid.m_Error = (driveTargetY - positionY);
+                m_Rpid.m_Error = (driveTargetR - positionR);
+
+                driverX = m_Xpid.CalcPID(systemTime);
+                driverY = m_Ypid.CalcPID(systemTime);
+                driverR = m_Rpid.CalcPID(systemTime);
+
+
                 break;
             }
         }
@@ -195,6 +280,11 @@ public class DrivetrainCommand extends Command
         if (ms_data.aim.fuelVelocity == 0) ms_data.aim.flightTime = 0;
         else  ms_data.aim.flightTime = (ms_data.aim.distance)/(ms_data.aim.fuelVelocity * Math.cos(ms_data.aim.angle));
 
+        
+        ms_this.m_Xswerve = driverX  * driverT;
+        ms_this.m_Yswerve = driverY  * driverT;
+        ms_this.m_Rswerve = driverR  * driverT;
+
     }
 
     @Override
@@ -209,12 +299,12 @@ public class DrivetrainCommand extends Command
         return false;
     }
 
-    private double addDeadZone(double input, double limit)
+    private double addDeadZone(double driver, double limit)
     {
         double output;
 
-        if      (input < -limit) output = (input + limit)/(1-limit);
-        else if (input >  limit) output = (input - limit)/(1-limit);
+        if      (driver < -limit) output = (driver + limit)/(1-limit);
+        else if (driver >  limit) output = (driver - limit)/(1-limit);
         else output = 0;
 
         return output;
