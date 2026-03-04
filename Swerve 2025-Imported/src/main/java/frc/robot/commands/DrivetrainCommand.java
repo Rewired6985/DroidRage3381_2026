@@ -22,21 +22,21 @@ public class DrivetrainCommand extends Command
     private boolean usingJoystick;
 
     
-    private static double[] BYBLUEDEPOT   = {3.542, 20.812, 0};
-    private static double[] BLUEDEPOT     = {1.292, 20.812, 0};
+    private static double[] BYBLUEDEPOT   = {3.542, 20.812, 180};
+    private static double[] BLUEDEPOT     = {1.292, 20.812, 180};
     private static double[] BLUEOUTPOST   = {1.292,  3.427, 0};
     private static double[] BLUECENTER    = {6.609, 13.237, 0};
 
-    private static double[] BYREDDEPOT   = {0, 0, 0};
-    private static double[] REDDEPOT     = {0, 0, 0};
-    private static double[] REDOUTPOST   = {0, 0, 0};
-    private static double[] REDCENTER    = {0, 0, 0};
+    private static double[] BYREDDEPOT   = {52.018,  6.953,  180};
+    private static double[] REDDEPOT     = {54.268,  6.953,  180};
+    private static double[] REDOUTPOST   = {54.268, 24.2892, 0};
+    private static double[] REDCENTER    = {47.657, 13.238,  0};
 
-    private static double acceptanceRange = 2.5;
+    private static double acceptanceRange = 0.5;
 
-    private PIDFController m_Xpid = new PIDFController(0.05,0,0,0);
-    private PIDFController m_Ypid = new PIDFController(0.05,0,0,0);
-    private PIDFController m_Rpid = new PIDFController(0.05,0,0,0);
+    private PIDFController m_Xpid = new PIDFController(0.1,0,0,0);
+    private PIDFController m_Ypid = new PIDFController(0.1,0,0,0);
+    private PIDFController m_Rpid = new PIDFController(0.1,0,0,0);
 
     public DrivetrainCommand(DrivetrainSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -194,6 +194,7 @@ public class DrivetrainCommand extends Command
                     {
                         driveTargetX = positionX; 
                         driveTargetY = positionY; 
+                        driveTargetR = positionR;
                         break;
                     }
                     case TODEPOT:
@@ -222,8 +223,8 @@ public class DrivetrainCommand extends Command
                     }
                     case COLLECTOUTPOST:
                     {
-                        if (allyRed) { driveTargetX = REDDEPOT[0];  driveTargetY = REDDEPOT[1];  driveTargetR = REDDEPOT[2];}
-                        else         { driveTargetX = BLUEDEPOT[0]; driveTargetY = BLUEDEPOT[1]; driveTargetR = BLUEDEPOT[2];}
+                        if (allyRed) { driveTargetX = REDOUTPOST[0];  driveTargetY = REDOUTPOST[1];  driveTargetR = REDOUTPOST[2];}
+                        else         { driveTargetX = BLUEOUTPOST[0]; driveTargetY = BLUEOUTPOST[1]; driveTargetR = BLUEOUTPOST[2];}
                         break;
                     }
                 }
@@ -234,11 +235,45 @@ public class DrivetrainCommand extends Command
                      positionY < (driveTargetY + acceptanceRange))) ms_this.inPosition = true;
                 else                                                ms_this.inPosition = false;
 
+                if (ms_this.inPosition)
+                {
+
+                    
+                    if (ms_this.state == Constants.eAuto.COLLECTDEPOT) ms_this.depotCollected = true;
+
+                    if (ms_this.state == Constants.eAuto.COLLECTOUTPOST) ms_this.outpostCollected = true;
+
+                    switch (ms_this.goal)
+                    {
+                        case DEPOT:   
+                        {
+                            if (ms_this.depotCollected)   ms_this.goalAccomplished = true; break;
+                        }
+                        case OUTPOST: 
+                        {
+                            if (ms_this.outpostCollected) ms_this.goalAccomplished = true; break;
+                        }
+                        case DEPOT_THEN_OUTPOST: 
+                        {
+                            if (ms_this.outpostCollected && ms_this.depotCollected) ms_this.goalAccomplished = true; 
+                            break;
+                        }
+                        case OUTPOST_THEN_DEPOT:
+                        {
+                            if (ms_this.outpostCollected && ms_this.depotCollected) ms_this.goalAccomplished = true; 
+                            break;
+                        }
+                        case NOMOVE: ms_this.goalAccomplished = true; break;
+                    }
+                }
+
                 SmartDashboard.putNumber("targetX", driveTargetX);
                 SmartDashboard.putNumber("targetY", driveTargetY);
                 SmartDashboard.putString("state",ms_this.state.toString());
 
-
+                SmartDashboard.putBoolean("did outpost", ms_this.outpostCollected);
+                SmartDashboard.putBoolean("did depot",   ms_this.depotCollected);
+                SmartDashboard.putBoolean("did goal",    ms_this.goalAccomplished);
 
 
                 m_Xpid.m_Error = (driveTargetX - positionX);

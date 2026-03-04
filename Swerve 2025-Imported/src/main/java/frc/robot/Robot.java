@@ -10,103 +10,103 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
 
-  private Command m_autonomousCommand;
+	private Command m_autonomousCommand;
 
-  private final RobotContainer m_robotContainer;
-  private boolean inSim = false;
- 
-
-  public Robot() 
-  {
-    m_robotContainer = new RobotContainer();
-  }
-    
-  
+	private final RobotContainer m_robotContainer;
+	private boolean inSim = false;
 
 
-  @Override 
-  public void robotPeriodic() 
-  {
-    CommandScheduler.getInstance().run();
-  }
-    
-  
-  public void disabledInit() 
-  {
-
-  }
-    
-  @Override
-  public void disabledPeriodic() 
-  {
-    m_robotContainer.updateChooserValues();
-  }
-
-  @Override
-  public void disabledExit() 
-  {
-
-  }
-
-  @Override
-  public void autonomousInit() 
-  {
-
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_robotContainer.setDriveMode(Constants.eMode.AUTO);
-    m_robotContainer.setSimState(inSim);
-
-    if (m_autonomousCommand != null) 
-    {
-      m_autonomousCommand.schedule();
-    }
-  }
-
-  @Override
-  public void autonomousPeriodic() 
-  {
-
-  }
-
-  @Override
-  public void autonomousExit() {}
-
-  @Override
-  public void teleopInit() 
-  {
-    if (m_autonomousCommand != null) 
-    {
-      m_autonomousCommand.cancel();
-    }
-    m_robotContainer.setDriveMode(Constants.eMode.TELEOP);
-    m_robotContainer.setSimState(inSim);
-  }
-
-  @Override
-  public void teleopPeriodic() {}
-
-  @Override
-  public void teleopExit() {}
-
-  @Override
-  public void testInit() 
-  {
-    CommandScheduler.getInstance().cancelAll();
-  }
-
-  @Override
-  public void testPeriodic() {}
-
-  @Override
-  public void testExit() {}
+	public Robot() 
+	{
+		m_robotContainer = new RobotContainer();
+	}
 
 
-  @Override
-  public void simulationPeriodic() 
-  {
-    inSim = true;
-    m_robotContainer.doSimStuff();
-    m_robotContainer.updateLogger();
-  }
+
+
+	@Override 
+	public void robotPeriodic() 
+	{
+		CommandScheduler.getInstance().run();
+	}
+
+
+	public void disabledInit() 
+	{
+
+	}
+
+	@Override
+	public void disabledPeriodic() 
+	{
+		m_robotContainer.updateChooserValues();
+	}
+
+	@Override
+	public void disabledExit() 
+	{
+
+	}
+
+	@Override
+	public void autonomousInit() 
+	{
+
+		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+		m_robotContainer.setDriveMode(Constants.eMode.AUTO);
+		m_robotContainer.setSimState(inSim);
+
+        if (m_autonomousCommand != null) 
+        {
+            m_autonomousCommand.schedule();
+        }
+	}
+
+	@Override
+	public void autonomousPeriodic() 
+	{
+
+	}
+
+	@Override
+	public void autonomousExit() {}
+
+	@Override
+	public void teleopInit() 
+	{
+		if (m_autonomousCommand != null) 
+	{
+	    m_autonomousCommand.cancel();
+	}
+	    m_robotContainer.setDriveMode(Constants.eMode.TELEOP);
+		m_robotContainer.setSimState(inSim);
+	}
+
+	@Override
+	public void teleopPeriodic() {}
+
+	@Override
+	public void teleopExit() {}
+
+	@Override
+	public void testInit() 
+	{
+	    CommandScheduler.getInstance().cancelAll();
+	}
+
+	@Override
+	public void testPeriodic() {}
+
+	@Override
+	public void testExit() {}
+
+
+	@Override
+	public void simulationPeriodic() 
+	{
+	    inSim = true;
+	    m_robotContainer.doSimStuff();
+	    m_robotContainer.updateLogger();
+	}
 
 }

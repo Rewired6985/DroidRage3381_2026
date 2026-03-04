@@ -55,6 +55,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarouselSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.DataMgmtSubsystem;
+import frc.robot.subsystems.DataMgmtSubsystem.positionStruct;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -63,12 +64,12 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
 
-    private final DataMgmtSubsystem ms_data          = new DataMgmtSubsystem();
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-    private final DrivetrainSubsystem ms_drivetrain  = new DrivetrainSubsystem();
-    private final IntakeSubsystem ms_intake          = new IntakeSubsystem();
-    private final CarouselSubsystem ms_carousel      = new CarouselSubsystem();
-    private final ShooterSubsystem ms_shooter        = new ShooterSubsystem();
+    private DataMgmtSubsystem ms_data          = new DataMgmtSubsystem();
+    private CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private DrivetrainSubsystem ms_drivetrain  = new DrivetrainSubsystem();
+    private IntakeSubsystem ms_intake          = new IntakeSubsystem();
+    private CarouselSubsystem ms_carousel      = new CarouselSubsystem();
+    private ShooterSubsystem ms_shooter        = new ShooterSubsystem();
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -92,7 +93,7 @@ public class RobotContainer {
 
     SendableChooser<Command> m_chooser        = new SendableChooser<>();
     SendableChooser<Constants.eInitPose> m_poseChooser    = new SendableChooser<>();
-    SendableChooser<Constants.eAutoGoal> m_goalChooser   = new SendableChooser<>();
+    SendableChooser<Constants.eAutoGoal> m_goalChooser    = new SendableChooser<>();
 
     public boolean returnFalse()
     {
@@ -168,6 +169,7 @@ public class RobotContainer {
         
 
         configureBindings();
+
         
         ms_data.setAlliance();
         ms_data.position.setupVisionSim();
@@ -191,12 +193,17 @@ public class RobotContainer {
 
     public void updateChooserValues()
     {
-        ms_data.position.updateInitPosition(m_poseChooser.getSelected());
+        Constants.eInitPose initPose = m_poseChooser.getSelected();
+        ms_data.position.updateInitPosition(initPose);
+        ms_drivetrain.initPose = initPose;
+
         ms_drivetrain.updateParams(m_goalChooser.getSelected());
         SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
+
+        SmartDashboard.putBoolean("isAllianceRed", ms_data.AllianceIsRed);
     }
             
-    public Command getAutonomousCommand() 
+    public Command getAutonomousCommand()
     {
         return m_chooser.getSelected();
     }
