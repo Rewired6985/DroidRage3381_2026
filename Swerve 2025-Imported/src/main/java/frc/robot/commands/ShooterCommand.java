@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
@@ -21,6 +22,8 @@ public class ShooterCommand extends Command
     private double shooterSpeed = 0;
     private int accCounter = 0;
     private int dclCounter = 0;
+
+    private double turretTarget = 0;
 
     public ShooterCommand(ShooterSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -50,6 +53,8 @@ public class ShooterCommand extends Command
     @Override
     public void execute()
     {
+
+        //TODO add velocity compensation in shooter target
         
         double turretSpeed = 0;
         double useSpeed = 0;
@@ -60,16 +65,33 @@ public class ShooterCommand extends Command
         boolean swivel_left = false;
         boolean swivel_right = false;
 
+        double yaw = ms_data.position.getYaw();
+
+        double targetX = ms_data.aim.target[0];
+        double targetY = ms_data.aim.target[1];
+
+        double differenceX = ms_data.aim.turretX - targetX;
+        double differenceY = ms_data.aim.turretY - targetY;
+        double targetAngle = (Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180;
+
+        if      ((differenceX < 0) && (differenceY > 0)) targetAngle = targetAngle - 180;
+        else if ((differenceX < 0) && (differenceY < 0)) targetAngle = targetAngle + 180;
+
+        turretTarget = -ms_data.rolloverHelper(yaw + targetAngle);
+
+        SmartDashboard.putNumber("turret target", turretTarget);
+        SmartDashboard.putNumber("yaw", yaw);
+        
+
         ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
                             (Math.cos(ms_data.aim.angle) * 
                            Math.sqrt((2*(Constants.SHOOTERHEIGHT - ms_data.aim.target[2] + 
                                         (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
                                      (Constants.GRAVITY))));
 
-        targetVelocity = ms_data.aim.fuelVelocity * 57.29578;
 
         
-        // SmartDashboard.putNumber("target velocity", targetVelocity);
+        // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
 
         switch (ms_data.Mode)
         {

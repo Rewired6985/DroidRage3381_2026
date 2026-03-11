@@ -8,7 +8,15 @@ public class Constants
      */
     public static double GRAVITY = 32.174;
 
-    
+    /**
+     * The conversion ratio of feet to meters
+     */
+    public static double FEET_PER_METER = 3.2804;
+
+    public static double DEGREES_PER_RADIANS = 57.295779513;
+
+    public static double TURRETX = 0;
+    public static double TURRETY = 0;
 
     public static double SHOOTERHEIGHT = 2.208;
 

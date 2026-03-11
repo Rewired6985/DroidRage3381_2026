@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.eAim;
 import frc.robot.Constants.eInitPose;
 import frc.robot.Constants.eMode;
@@ -146,9 +147,23 @@ public class DataMgmtSubsystem extends SubsystemBase
             return b_result.getBestTarget();
         }
         
+        /**
+         * specifically used for getting the StatusSignal<Angle> heading of the robot
+         * @return
+         */
         public StatusSignal<Angle> getHeading()
         {
             return pigeon.getYaw();
+        }
+
+        /**
+         * specifically for getting a yaw double, between -180 and 180 degrees
+         * @return
+         */
+        public double getYaw()
+        {
+            double yaw = rolloverHelper(pigeon.getYaw().getValueAsDouble());
+            return yaw;
         }
 
         public void updateDrivetrain(CommandSwerveDrivetrain input)
@@ -175,14 +190,14 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         public double getEstX()
         {
-            double return_value = (estimatedPose.getX() * 3.2804);
+            double return_value = (estimatedPose.getX() * Constants.FEET_PER_METER);
             SmartDashboard.putNumber("robotX", return_value);
             return return_value;
         }
 
         public double getEstY()
         {
-            double return_value = (estimatedPose.getY() * 3.2804);
+            double return_value = (estimatedPose.getY() * Constants.FEET_PER_METER);
             SmartDashboard.putNumber("robotY", return_value);
             return return_value;
         }
@@ -260,6 +275,9 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean isTracking = false;
         public boolean inDefense  = false;
         public boolean inEndgame  = false;
+
+        public double turretX;
+        public double turretY;
 
         public double[] target = {0, 0, 0};
         public double velocityX = 0;
@@ -344,6 +362,29 @@ public class DataMgmtSubsystem extends SubsystemBase
             if (ally.get() == Alliance.Blue) AllianceIsRed = false;  
         }
 
+    }
+
+    /**
+     * automatically calculates error term;
+     * ONLY FOR USE WITH ROLLOVERS
+     * @param actual
+     * @param command
+     * @return error
+     */
+    public double errorHelper(double actual, double command)
+    {
+        double error = command - actual;
+
+        if      (actual >  90 && command < -90) error = error + 360;
+        else if (actual < -90 && command >  90) error = error - 360;
+
+        return error;
+    }
+
+    public double rolloverHelper(double angle)
+    {
+        double value = angle - Math.round(angle/360) * 360;
+        return value;
     }
 
     public boolean brake() 

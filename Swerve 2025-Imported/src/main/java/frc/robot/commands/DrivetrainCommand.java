@@ -70,16 +70,16 @@ public class DrivetrainCommand extends Command
     {
 
         ms_data.aim.updateVelocity();
-        double positionX = ms_data.position.getEstX();
-        double positionY = ms_data.position.getEstY();
-        double positionR   = ms_data.position.getHeading().getValueAsDouble();
-        double velocityX = ms_data.aim.velocityX;
-        double velocityY = ms_data.aim.velocityY;
+        double drivetrainX = ms_data.position.getEstX();
+        double drivetrainY = ms_data.position.getEstY();
+        double drivetrainR = ms_data.position.getYaw();
+        double velocityX   = ms_data.aim.velocityX;
+        double velocityY   = ms_data.aim.velocityY;
 
-        double distanceX = (positionX - ms_data.aim.target[0]);
-        double distanceY = (positionY - ms_data.aim.target[1]);
-        double vectorI   = (ms_data.aim.flightTime * velocityX);
-        double vectorJ   = (ms_data.aim.flightTime * velocityY);
+        double[] shotTarget = {0, 0, 0};
+
+        ms_data.aim.turretX = drivetrainX + ((Constants.TURRETX * Math.cos(drivetrainR)) - (Constants.TURRETY * Math.sin(drivetrainR)));
+        ms_data.aim.turretY = drivetrainY + ((Constants.TURRETX * Math.sin(drivetrainR)) + (Constants.TURRETY * Math.cos(drivetrainR)));
 
         double driveTargetX = 0;
         double driveTargetY = 0;
@@ -87,16 +87,10 @@ public class DrivetrainCommand extends Command
 
         double systemTime = Timer.getFPGATimestamp();
 
-        
-        // SmartDashboard.putNumber("distanceX", distanceX);
-        // SmartDashboard.putNumber("distanceY", distanceY);
+        SmartDashboard.putBoolean("hasTarget?", ms_data.aim.hasTarget);
 
-        // SmartDashboard.putBoolean("hasTarget?", ms_data.aim.hasTarget);
-        // SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
-        // SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
-        // SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
+        SmartDashboard.putNumber("distance", ms_data.aim.distance);
 
-        // SmartDashboard.putNumber("distance", ms_data.aim.distance);
 
 
         boolean allyRed = ms_data.AllianceIsRed;
@@ -110,45 +104,63 @@ public class DrivetrainCommand extends Command
 
         if (allyRed)
         {
-            if      (positionX > 40.880) 
+            if      (drivetrainX > 40.880) 
             {
-                ms_data.aim.target = Constants.shot_REDHUB;
+                shotTarget = Constants.shot_REDHUB;
                 inAllianceZone = true;
             }
-            else if (positionX > 15.13)
+            else if (drivetrainX > 15.13)
             {
-                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTRED;
-                else                    ms_data.aim.target = Constants.shot_RIGHTRED;
+                if (drivetrainY > 13.139) shotTarget = Constants.shot_LEFTRED;
+                else                      shotTarget = Constants.shot_RIGHTRED;
             }
             else
             {
-                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTNEUTRAL; 
-                else                    ms_data.aim.target = Constants.shot_RIGHTNEUTRAL;
+                if (drivetrainY > 13.139) shotTarget = Constants.shot_LEFTNEUTRAL; 
+                else                      shotTarget = Constants.shot_RIGHTNEUTRAL;
             }
         }
         else
         {
-            if (positionX > 39.047)
+            if (drivetrainX > 39.047)
             {
-                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTNEUTRAL;
-                else                    ms_data.aim.target = Constants.shot_RIGHTNEUTRAL;
+                if (drivetrainY > 13.139) shotTarget = Constants.shot_LEFTNEUTRAL;
+                else                      shotTarget = Constants.shot_RIGHTNEUTRAL;
             }
-            else if (positionX > 15.13)
+            else if (drivetrainX > 15.13)
             {
-                if (positionY > 13.139) ms_data.aim.target = Constants.shot_LEFTBLUE;
-                else                    ms_data.aim.target = Constants.shot_RIGHTBLUE;
+                if (drivetrainY > 13.139) shotTarget = Constants.shot_LEFTBLUE;
+                else                      shotTarget = Constants.shot_RIGHTBLUE;
             }
-            else if (positionX < 13.297)         
+            else if (drivetrainX < 13.297)         
             {
-                ms_data.aim.target = Constants.shot_BLUEHUB;
+                shotTarget = Constants.shot_BLUEHUB;
                 inAllianceZone = true;
             }
         }
 
+        double vectorI   = (ms_data.aim.flightTime * velocityX);
+        double vectorJ   = (ms_data.aim.flightTime * velocityY);
+
+        SmartDashboard.putNumber("vectorI", vectorI);
+        SmartDashboard.putNumber("vectorJ", vectorJ);
+
+        ms_data.aim.target[0] = shotTarget[0] - vectorI;
+        ms_data.aim.target[1] = shotTarget[1] - vectorJ;
+        ms_data.aim.target[2] = shotTarget[2];
+        
+        SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
+        SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
+        SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
+
+        double distanceX = (ms_data.aim.turretX - ms_data.aim.target[0]);
+        double distanceY = (ms_data.aim.turretY - ms_data.aim.target[1]);
+
+
         if ((inAllianceZone == false) && 
-            (((positionX < 16.963) && (positionX > 13.297)) || 
-             ((positionX < 40.880) && (positionX > 37.214)) || 
-             ((positionY < 15.627) && (positionY > 10.759))))
+            (((drivetrainX < 16.963) && (drivetrainX > 13.297)) || 
+             ((drivetrainX < 40.880) && (drivetrainX > 37.214)) || 
+             ((drivetrainY < 15.627) && (drivetrainY > 10.759))))
         {
             ms_data.aim.hasTarget = false;
         }
@@ -192,9 +204,9 @@ public class DrivetrainCommand extends Command
                 {
                     case REST: 
                     {
-                        driveTargetX = positionX; 
-                        driveTargetY = positionY; 
-                        driveTargetR = positionR;
+                        driveTargetX = drivetrainX; 
+                        driveTargetY = drivetrainY; 
+                        driveTargetR = drivetrainR;
                         break;
                     }
                     case TODEPOT:
@@ -229,11 +241,11 @@ public class DrivetrainCommand extends Command
                     }
                 }
 
-                if ((positionX > (driveTargetX - acceptanceRange) && 
-                     positionX < (driveTargetX + acceptanceRange)) && 
-                    (positionY > (driveTargetY - acceptanceRange) && 
-                     positionY < (driveTargetY + acceptanceRange))) ms_this.inPosition = true;
-                else                                                ms_this.inPosition = false;
+                if ((drivetrainX > (driveTargetX - acceptanceRange) && 
+                     drivetrainX < (driveTargetX + acceptanceRange)) && 
+                    (drivetrainY > (driveTargetY - acceptanceRange) && 
+                     drivetrainY < (driveTargetY + acceptanceRange))) ms_this.inPosition = true;
+                else                                                  ms_this.inPosition = false;
 
                 if (ms_this.inPosition)
                 {
@@ -276,9 +288,9 @@ public class DrivetrainCommand extends Command
                 SmartDashboard.putBoolean("did goal",    ms_this.goalAccomplished);
 
 
-                m_Xpid.m_Error = (driveTargetX - positionX);
-                m_Ypid.m_Error = (driveTargetY - positionY);
-                m_Rpid.m_Error = (driveTargetR - positionR);
+                m_Xpid.m_Error = (driveTargetX - drivetrainX);
+                m_Ypid.m_Error = (driveTargetY - drivetrainY);
+                m_Rpid.m_Error = ms_data.errorHelper(driveTargetR, drivetrainR);
 
                 driverX = m_Xpid.CalcPID(systemTime);
                 driverY = m_Ypid.CalcPID(systemTime);
@@ -309,8 +321,8 @@ public class DrivetrainCommand extends Command
             }
         }
                                          
-        ms_data.aim.distance = Math.sqrt((distanceX - vectorI) * (distanceX - vectorI) + 
-                                         (distanceY - vectorJ) * (distanceY - vectorJ));
+        ms_data.aim.distance = Math.sqrt((distanceX) * (distanceX) + 
+                                         (distanceY) * (distanceY));
 
         if (ms_data.aim.fuelVelocity == 0) ms_data.aim.flightTime = 0;
         else  ms_data.aim.flightTime = (ms_data.aim.distance)/(ms_data.aim.fuelVelocity * Math.cos(ms_data.aim.angle));
