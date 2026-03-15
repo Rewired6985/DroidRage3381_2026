@@ -72,18 +72,18 @@ public class DataMgmtSubsystem extends SubsystemBase
         final Pose2d rightRedPosition    = new Pose2d(13,5,blueInitRotation);
 
         //pablo configs                          (X,Y,Z,R,P,Y)
-        private double[] pablo_pos              = {0.1,-0.1,0.1,0,-15,15};
-        private PhotonCamera pablo              = new PhotonCamera("DR3381_pablo");
-        private Translation3d pablo_translation = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
-        private Rotation3d    pablo_rotation    = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
-        private Transform3d   pablo_transform   = new Transform3d(pablo_translation, pablo_rotation);
-        private SimCameraProperties pabloProp   = new SimCameraProperties();
-        private PhotonCameraSim sim_pablo       = new PhotonCameraSim(pablo, pabloProp);
-        public PhotonPoseEstimator pablo_estimator   = new PhotonPoseEstimator(field_2026, pablo_transform);
+        private double[] pablo_pos                 = {0.20909788, -0.3599434, 0.58316622, 0, -10, 90};
+        private PhotonCamera pablo                 = new PhotonCamera("DR3381_pablo");
+        private Translation3d pablo_translation    = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
+        private Rotation3d    pablo_rotation       = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
+        private Transform3d   pablo_transform      = new Transform3d(pablo_translation, pablo_rotation);
+        private SimCameraProperties pabloProp      = new SimCameraProperties();
+        private PhotonCameraSim sim_pablo          = new PhotonCameraSim(pablo, pabloProp);
+        public PhotonPoseEstimator pablo_estimator = new PhotonPoseEstimator(field_2026, pablo_transform);
         public PhotonPipelineResult p_result;
 
         //baplo configs                           (X,Y,Z,R,P,Y)
-        private double[] baplo_pos              = {0.1,0.1,0.1,0,-15,-15};
+        private double[] baplo_pos              = {0.20909788, 0.36712398, 0.58316622, 0, -10, -90};
         private PhotonCamera baplo              = new PhotonCamera("DR3381_baplo");
         private Translation3d baplo_translation = new Translation3d(baplo_pos[0],baplo_pos[1],baplo_pos[2]);
         private Rotation3d    baplo_rotation    = new Rotation3d(Math.toRadians(baplo_pos[3]),Math.toRadians(baplo_pos[4]),Math.toRadians(baplo_pos[5]));
@@ -271,10 +271,9 @@ public class DataMgmtSubsystem extends SubsystemBase
     {
         public eAim state = eAim.ZERO;
 
-        public boolean hasTarget  = false;
-        public boolean isTracking = false;
-        public boolean inDefense  = false;
-        public boolean inEndgame  = false;
+        public boolean shoot = false;
+        public boolean tracking = false;
+        public boolean stop  = false;
 
         public double turretX;
         public double turretY;
@@ -287,7 +286,7 @@ public class DataMgmtSubsystem extends SubsystemBase
         public double distance = 0;
         public double flightTime = 0;
 
-        public double angle = 70 * Math.PI / 180;
+        public double angle = 75 * Math.PI / 180;
 
         public void updateVelocity()
         {
@@ -297,7 +296,11 @@ public class DataMgmtSubsystem extends SubsystemBase
 
             velocityX = speeds.vxMetersPerSecond;
             velocityY = speeds.vyMetersPerSecond;
+        }
 
+        public void updateAngle(int param)
+        {
+            angle = param * Math.PI/180;
         }
 
     }
@@ -326,25 +329,18 @@ public class DataMgmtSubsystem extends SubsystemBase
         {
             case ZERO: 
             {
-                if (aim.hasTarget) aim.state = eAim.HUNT;
+                if (aim.shoot) aim.state = eAim.TRANSITION;
                 break;
             }
-            case HUNT:
+            case TRANSITION: 
             {
-                if (aim.isTracking) aim.state = eAim.STANDBY;
+                if (aim.tracking && aim.shoot) aim.state = eAim.FIRE;
                 break;
             }
-            case FIRE: 
+            case FIRE:
             {
-                if (aim.hasTarget  = false) aim.state = eAim.STANDBY;
-                if (aim.isTracking = false) aim.state = eAim.STANDBY;
-                break;
-            }
-            case STANDBY: 
-            {
-                if (aim.hasTarget) aim.state = eAim.FIRE;
-                if (aim.inDefense) aim.state = eAim.ZERO;
-                if (aim.inEndgame) aim.state = eAim.ZERO;
+                if (!aim.shoot) aim.state = eAim.TRANSITION;
+                if (aim.stop)   aim.state = eAim.ZERO;
                 break;
             }
         }

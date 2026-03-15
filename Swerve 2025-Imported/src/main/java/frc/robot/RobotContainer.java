@@ -94,6 +94,7 @@ public class RobotContainer {
     SendableChooser<Command> m_chooser        = new SendableChooser<>();
     SendableChooser<Constants.eInitPose> m_poseChooser    = new SendableChooser<>();
     SendableChooser<Constants.eAutoGoal> m_goalChooser    = new SendableChooser<>();
+    SendableChooser<Integer>             m_hoodChooser    = new SendableChooser<>();
 
     public boolean returnFalse()
     {
@@ -106,6 +107,7 @@ public class RobotContainer {
     private final Joystick              joystick    = new Joystick(5);
     // private final CommandXboxController a_pac1 = new CommandXboxController(2);
     // private final CommandXboxController a_pac2 = new CommandXboxController(3);
+
 
 
     private void configureBindings()
@@ -131,19 +133,16 @@ public class RobotContainer {
 
         controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
         brakeTrigger  .whileTrue(drivetrain.applyRequest(() -> brake));
-        controller.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-controller.getLeftY(), -controller.getLeftX()))
-        ));
 
         callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
 
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        controller.back().and(controller.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // controller.back().and(controller.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // controller.back().and(controller.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // controller.start().and(controller.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on y press
         controller.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -166,10 +165,7 @@ public class RobotContainer {
         final int choose_middle = 2;
         final int choose_right  = 3;
 
-        
-
         configureBindings();
-
         
         ms_data.setAlliance();
         ms_data.position.setupVisionSim();
@@ -189,6 +185,10 @@ public class RobotContainer {
         m_goalChooser.addOption("outpost, depot"   ,Constants.eAutoGoal.OUTPOST_THEN_DEPOT);
         SmartDashboard.putData("goal"            ,m_goalChooser);
 
+        m_hoodChooser.setDefaultOption("normal", 75);
+        m_hoodChooser.addOption("normal", 75);
+        m_hoodChooser.addOption("passing", 65);
+
     }
 
     public void updateChooserValues()
@@ -197,6 +197,7 @@ public class RobotContainer {
         ms_data.position.updateInitPosition(initPose);
         ms_drivetrain.initPose = initPose;
 
+        ms_data.aim.updateAngle(m_hoodChooser.getSelected());
         ms_drivetrain.updateParams(m_goalChooser.getSelected());
         SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
 

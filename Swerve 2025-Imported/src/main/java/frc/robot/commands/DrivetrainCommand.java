@@ -87,8 +87,6 @@ public class DrivetrainCommand extends Command
 
         double systemTime = Timer.getFPGATimestamp();
 
-        SmartDashboard.putBoolean("hasTarget?", ms_data.aim.hasTarget);
-
         SmartDashboard.putNumber("distance", ms_data.aim.distance);
 
 
@@ -157,19 +155,6 @@ public class DrivetrainCommand extends Command
         double distanceY = (ms_data.aim.turretY - ms_data.aim.target[1]);
 
 
-        if ((inAllianceZone == false) && 
-            (((drivetrainX < 16.963) && (drivetrainX > 13.297)) || 
-             ((drivetrainX < 40.880) && (drivetrainX > 37.214)) || 
-             ((drivetrainY < 15.627) && (drivetrainY > 10.759))))
-        {
-            ms_data.aim.hasTarget = false;
-        }
-        else
-        {
-            ms_data.aim.hasTarget = true;
-        }
-
-
 
         switch (ms_data.Mode)
         {
@@ -183,8 +168,8 @@ public class DrivetrainCommand extends Command
                     driverR = -m_joystick.getZ() * 0.9;
                     driverT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
-                    ms_data.inputs.brake = m_joystick.getRawButton(4);
-                    ms_data.inputs.resetGyro = m_joystick.getRawButton(13);
+                    ms_data.inputs.brake     = m_joystick.getRawButton(4);
+                    ms_data.inputs.resetGyro = m_joystick.getRawButton(7);
 
                 }
                 else
@@ -307,15 +292,11 @@ public class DrivetrainCommand extends Command
             {
                 break;
             }
-            case HUNT:
+            case TRANSITION:
             {
                 break;
             }
             case FIRE: 
-            {
-                break;
-            }
-            case STANDBY: 
             {
                 break;
             }

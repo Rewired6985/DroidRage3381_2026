@@ -45,10 +45,9 @@ public class Constants
      */
     public static enum eAim
     {
-        ZERO, 
-        HUNT, 
-        FIRE, 
-        STANDBY;
+        ZERO,
+        TRANSITION,
+        FIRE;
     }
 
     /**
@@ -86,5 +85,29 @@ public class Constants
         DEPOT_THEN_OUTPOST,
         OUTPOST_THEN_DEPOT,
     }
+
+    public static enum eMethod
+    {
+        CONTROLLER,
+        JOYSTICK
+    }
+
+
+    /*   JOYSTICK INPUTS 
+     * 1 - shoot
+     * 2 - stop
+     * 3 - intake
+     * 4 - brake
+     * 7 - reset gyro
+    */
+
+    /*   CONTROLLER INPUTS 
+     * right bumper - shoot
+     * left bumper  - stop
+     * x            - intake
+     * a            - brake
+     * y            - reset gyro
+    */
+    
 
 }

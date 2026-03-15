@@ -24,14 +24,4 @@ public class CarouselSubsystem extends SubsystemBase
         carousel_motor.set(speed);
     }
 
-    public void setGateSpeed(double speed)
-    {
-        gate_motor.set(speed);
-    }
-
-    public double getGatePosition()
-    {
-        return gate_encoder.getPosition();
-    }
-
 }

@@ -1,12 +1,14 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.PIDFController;
 
 public class ShooterCommand extends Command
 {
@@ -17,13 +19,12 @@ public class ShooterCommand extends Command
     private CommandXboxController m_controller;
     private boolean usingJoystick;
 
-    private double targetVelocity = 0;
+    private double m_targetVelocity = 0;
+    private double m_turretTarget = 0;
 
-    private double shooterSpeed = 0;
-    private int accCounter = 0;
-    private int dclCounter = 0;
+    private PIDFController m_turretPID = new PIDFController(0,0,0,0);
 
-    private double turretTarget = 0;
+    private double COMPENSATION = 1;
 
     public ShooterCommand(ShooterSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -54,32 +55,25 @@ public class ShooterCommand extends Command
     public void execute()
     {
 
-        //TODO add velocity compensation in shooter target
+        double timestamp = Timer.getFPGATimestamp();
         
-        double turretSpeed = 0;
-        double useSpeed = 0;
-       
-        boolean accelerate = false;
-        boolean decelerate = false;
-        boolean trigger = false;
-        boolean swivel_left = false;
-        boolean swivel_right = false;
-
+        double m_turretSpeed = 0;
+        
         double yaw = ms_data.position.getYaw();
 
-        double targetX = ms_data.aim.target[0];
-        double targetY = ms_data.aim.target[1];
+        double m_targetX = ms_data.aim.target[0];
+        double m_targetY = ms_data.aim.target[1];
 
-        double differenceX = ms_data.aim.turretX - targetX;
-        double differenceY = ms_data.aim.turretY - targetY;
-        double targetAngle = (Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180;
+        double differenceX = ms_data.aim.turretX - m_targetX;
+        double differenceY = ms_data.aim.turretY - m_targetY;
+        double m_targetAngle = (Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180;
 
-        if      ((differenceX < 0) && (differenceY > 0)) targetAngle = targetAngle - 180;
-        else if ((differenceX < 0) && (differenceY < 0)) targetAngle = targetAngle + 180;
+        if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
+        else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
 
-        turretTarget = -ms_data.rolloverHelper(yaw + targetAngle);
+        m_turretTarget = -ms_data.rolloverHelper(yaw + m_targetAngle);
 
-        SmartDashboard.putNumber("turret target", turretTarget);
+        SmartDashboard.putNumber("m_turret m_target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
         
 
@@ -93,50 +87,26 @@ public class ShooterCommand extends Command
         
         // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
 
+        
         switch (ms_data.Mode)
         {
             case TELEOP:
             {
                 if (usingJoystick)
                 {
-                    accelerate = m_joystick.getRawButton(5);
-                    decelerate = m_joystick.getRawButton(10);
-                    trigger = m_joystick.getRawButton(1);
-                    swivel_left = m_joystick.getRawButton(6);
-                    swivel_right = m_joystick.getRawButton(9);
+                    ms_data.aim.shoot = m_joystick.getRawButton(1);
+                    ms_data.aim.stop  = m_joystick.getRawButton(2);
                 }
-                else 
+                else
                 {
-                    accelerate = m_controller.rightBumper().getAsBoolean();
-                    decelerate = m_controller.leftBumper().getAsBoolean();
-                    trigger = m_controller.b().getAsBoolean();
-                    swivel_left = m_controller.povLeft().getAsBoolean();
-                    swivel_right = m_controller.povRight().getAsBoolean();
+                    ms_data.aim.shoot = m_controller.rightBumper().getAsBoolean();
+                    ms_data.aim.stop  = m_controller.leftBumper().getAsBoolean();
                 }
-
-                //makes it so that every button press increments/decrements shooter shooterSpeed
-                if (decelerate) dclCounter = dclCounter + 1;
-                else dclCounter = 0;
-
-                if (accelerate) accCounter = accCounter + 1;
-                else accCounter = 0;
-
-                if (accCounter == 1) shooterSpeed = shooterSpeed + 0.05;
-                if (dclCounter == 1) shooterSpeed = shooterSpeed - 0.05;
-                
-                if (shooterSpeed > 0.95) shooterSpeed = 0.95;
-                if (shooterSpeed < 0) shooterSpeed = 0;
-                
-                if (trigger) useSpeed = shooterSpeed;
-                else         useSpeed = 0;
-
-                if      (swivel_left)  turretSpeed = 0.05;
-                else if (swivel_right) turretSpeed = -0.05;
-                else                   turretSpeed = 0;
                 break;
             }
             case AUTO:
             {
+                ms_data.aim.shoot = true;
                 break;
             }
         }
@@ -145,27 +115,28 @@ public class ShooterCommand extends Command
         {
             case ZERO: 
             {
+                m_targetVelocity = 0;
                 break;
             }
-            case HUNT:
+            case TRANSITION:
             {
+                m_targetVelocity = (ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION;
+                
                 break;
             }
-            case FIRE: 
+            case FIRE:
             {
-                break;
-            }
-            case STANDBY: 
-            {
+                m_targetVelocity = (ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION;
                 break;
             }
         }
 
-        
+        m_turretSpeed = m_turretPID.CalcPID(timestamp);
+
         // SmartDashboard.putNumber("shooter speed",   shooterSpeed);
-        // SmartDashboard.putNumber("turret position", ms_this.getTurretPosition());
-        ms_this.setShooterSpeed(useSpeed);
-        ms_this.setTurretSpeed(turretSpeed);
+        // SmartDashboard.putNumber("m_turret position", ms_this.getTurretPosition());
+        ms_this.setShooterSpeed(m_targetVelocity);
+        ms_this.setTurretSpeed(m_turretSpeed);
         
         // SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
         // SmartDashboard.putNumber("ShooterSpeed", useSpeed);
