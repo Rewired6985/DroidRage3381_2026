@@ -73,7 +73,7 @@ public class ShooterCommand extends Command
 
         m_turretTarget = -ms_data.rolloverHelper(yaw + m_targetAngle);
 
-        SmartDashboard.putNumber("m_turret m_target", m_turretTarget);
+        // SmartDashboard.putNumber("turret target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
         
 
@@ -96,6 +96,10 @@ public class ShooterCommand extends Command
                 {
                     ms_data.aim.shoot = m_joystick.getRawButton(1);
                     ms_data.aim.stop  = m_joystick.getRawButton(2);
+
+                    if      (m_joystick.getRawButton(10)) m_turretSpeed =  0.4;
+                    else if (m_joystick.getRawButton(9)) m_turretSpeed = -0.4;
+                    else                                        m_turretSpeed =  0;
                 }
                 else
                 {
@@ -120,26 +124,25 @@ public class ShooterCommand extends Command
             }
             case TRANSITION:
             {
-                m_targetVelocity = (ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION;
+                m_targetVelocity = -0.9 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 
                 break;
             }
             case FIRE:
             {
-                m_targetVelocity = (ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION;
+                m_targetVelocity = -0.9 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 break;
             }
         }
 
-        m_turretSpeed = m_turretPID.CalcPID(timestamp);
+        // m_turretSpeed = m_turretPID.CalcPID(timestamp);
 
         // SmartDashboard.putNumber("shooter speed",   shooterSpeed);
         // SmartDashboard.putNumber("m_turret position", ms_this.getTurretPosition());
         ms_this.setShooterSpeed(m_targetVelocity);
         ms_this.setTurretSpeed(m_turretSpeed);
         
-        // SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
-        // SmartDashboard.putNumber("ShooterSpeed", useSpeed);
+        SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
 
     }
 

@@ -114,12 +114,11 @@ public class RobotContainer {
     {
         Trigger brakeTrigger = new Trigger(ms_data::brake);
         Trigger resetField   = new Trigger(ms_data::resetGyro);
-        Trigger callIntake = new Trigger(ms_data::callIntake);
+        Trigger callIntake   = new Trigger(ms_data::intake);
+        Trigger callCarousel = new Trigger(ms_data::carousel);
 
         ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
-        ms_carousel.setDefaultCommand(new CarouselCommand(ms_carousel, ms_data, joystick));
         ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
-
         ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, joystick));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -135,6 +134,7 @@ public class RobotContainer {
         brakeTrigger  .whileTrue(drivetrain.applyRequest(() -> brake));
 
         callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
+        callCarousel.whileTrue(new CarouselCommand(ms_carousel, 0.95));
 
 
         // Run SysId routines when holding back/start and X/Y.
@@ -200,8 +200,6 @@ public class RobotContainer {
         ms_data.aim.updateAngle(m_hoodChooser.getSelected());
         ms_drivetrain.updateParams(m_goalChooser.getSelected());
         SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
-
-        SmartDashboard.putBoolean("isAllianceRed", ms_data.AllianceIsRed);
     }
             
     public Command getAutonomousCommand()

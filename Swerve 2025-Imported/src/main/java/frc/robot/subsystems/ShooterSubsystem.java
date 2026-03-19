@@ -5,16 +5,14 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase
 {
 
-    final TalonFX right_motor = new TalonFX(8);
-    final TalonFX left_motor  = new TalonFX(9);
-    final Servo hood_servo = new Servo(3);
-    final SparkMax turret_motor = new SparkMax(6, MotorType.kBrushless);
+    final TalonFX right_motor = new TalonFX(41);
+    final TalonFX left_motor  = new TalonFX(42);
+    final SparkMax turret_motor = new SparkMax(41, MotorType.kBrushless);
     final RelativeEncoder turret_encoder;
 
     public ShooterSubsystem()
@@ -31,11 +29,6 @@ public class ShooterSubsystem extends SubsystemBase
     public void setTurretSpeed(double set_speed)
     {
         turret_motor.set(set_speed);
-    }
-
-    public void setAngle(double set_angle)
-    {
-        hood_servo.setAngle(set_angle);
     }
 
     public double getTurretPosition()

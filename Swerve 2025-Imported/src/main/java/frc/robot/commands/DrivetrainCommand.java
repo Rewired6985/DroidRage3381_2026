@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -87,12 +89,12 @@ public class DrivetrainCommand extends Command
 
         double systemTime = Timer.getFPGATimestamp();
 
-        SmartDashboard.putNumber("distance", ms_data.aim.distance);
+        // SmartDashboard.putNumber("distance", ms_data.aim.distance);
 
 
 
         boolean allyRed = ms_data.AllianceIsRed;
-        boolean inAllianceZone = false;
+        boolean inAllianceZone;
         
 
         double driverX = 0;
@@ -117,6 +119,7 @@ public class DrivetrainCommand extends Command
                 if (drivetrainY > 13.139) shotTarget = Constants.shot_LEFTNEUTRAL; 
                 else                      shotTarget = Constants.shot_RIGHTNEUTRAL;
             }
+
         }
         else
         {
@@ -140,16 +143,16 @@ public class DrivetrainCommand extends Command
         double vectorI   = (ms_data.aim.flightTime * velocityX);
         double vectorJ   = (ms_data.aim.flightTime * velocityY);
 
-        SmartDashboard.putNumber("vectorI", vectorI);
-        SmartDashboard.putNumber("vectorJ", vectorJ);
+        // SmartDashboard.putNumber("vectorI", vectorI);
+        // SmartDashboard.putNumber("vectorJ", vectorJ);
 
         ms_data.aim.target[0] = shotTarget[0] - vectorI;
         ms_data.aim.target[1] = shotTarget[1] - vectorJ;
         ms_data.aim.target[2] = shotTarget[2];
         
-        SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
-        SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
-        SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
+        // SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
+        // SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
+        // SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
 
         double distanceX = (ms_data.aim.turretX - ms_data.aim.target[0]);
         double distanceY = (ms_data.aim.turretY - ms_data.aim.target[1]);
@@ -163,9 +166,38 @@ public class DrivetrainCommand extends Command
             {
                 if (usingJoystick) 
                 {
+
+                    int pov = m_joystick.getPOV();
+                    double setR = 0;
+
+                    if      (pov == -1) setR = -m_joystick.getZ();
+                    else if (pov == 0)
+                    {
+                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 0); 
+                        setR = m_Rpid.CalcPID(systemTime);
+                    }
+                    else if (pov == 90)
+                    {
+                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, -90); 
+                        setR = m_Rpid.CalcPID(systemTime);
+                    }
+                    else if (pov == 180)
+                    {
+                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 180); 
+                        setR = m_Rpid.CalcPID(systemTime);
+                    }
+                    else if (pov == 270)
+                    {
+                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 90); 
+                        setR = m_Rpid.CalcPID(systemTime);
+                    }
+
+
                     driverX = -m_joystick.getY() * 0.9;
                     driverY = -m_joystick.getX() * 0.9;
-                    driverR = -m_joystick.getZ() * 0.9;
+                    driverR = setR;
+
+
                     driverT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
                     ms_data.inputs.brake     = m_joystick.getRawButton(4);
@@ -192,24 +224,28 @@ public class DrivetrainCommand extends Command
                         driveTargetX = drivetrainX; 
                         driveTargetY = drivetrainY; 
                         driveTargetR = drivetrainR;
+                        ms_data.inRest = true;
                         break;
                     }
                     case TODEPOT:
                     {
                         if (allyRed) { driveTargetX = BYREDDEPOT[0];  driveTargetY = BYREDDEPOT[1];  driveTargetR = BYREDDEPOT[2];}
                         else         { driveTargetX = BYBLUEDEPOT[0]; driveTargetY = BYBLUEDEPOT[1]; driveTargetR = BYBLUEDEPOT[2];}
+                        ms_data.inRest = false;
                         break;
                     }
                     case TOCENTER:
                     {
                         if (allyRed) { driveTargetX = REDCENTER[0];  driveTargetY = REDCENTER[1];  driveTargetR = REDCENTER[2];}
                         else         { driveTargetX = BLUECENTER[0]; driveTargetY = BLUECENTER[1]; driveTargetR = BLUECENTER[2];}
+                        ms_data.inRest = false;
                         break;
                     }
                     case TOOUTPOST:
                     {
                         if (allyRed) { driveTargetX = REDOUTPOST[0];  driveTargetY = REDOUTPOST[1];  driveTargetR = REDOUTPOST[2];}
                         else         { driveTargetX = BLUEOUTPOST[0]; driveTargetY = BLUEOUTPOST[1]; driveTargetR = BLUEOUTPOST[2];}
+                        ms_data.inRest = false;
                         break;
                     }
                     case COLLECTDEPOT:
@@ -264,13 +300,13 @@ public class DrivetrainCommand extends Command
                     }
                 }
 
-                SmartDashboard.putNumber("targetX", driveTargetX);
-                SmartDashboard.putNumber("targetY", driveTargetY);
-                SmartDashboard.putString("state",ms_this.state.toString());
+                // SmartDashboard.putNumber("targetX", driveTargetX);
+                // SmartDashboard.putNumber("targetY", driveTargetY);
+                // SmartDashboard.putString("state",ms_this.state.toString());
 
-                SmartDashboard.putBoolean("did outpost", ms_this.outpostCollected);
-                SmartDashboard.putBoolean("did depot",   ms_this.depotCollected);
-                SmartDashboard.putBoolean("did goal",    ms_this.goalAccomplished);
+                // SmartDashboard.putBoolean("did outpost", ms_this.outpostCollected);
+                // SmartDashboard.putBoolean("did depot",   ms_this.depotCollected);
+                // SmartDashboard.putBoolean("did goal",    ms_this.goalAccomplished);
 
 
                 m_Xpid.m_Error = (driveTargetX - drivetrainX);
@@ -279,7 +315,7 @@ public class DrivetrainCommand extends Command
 
                 driverX = m_Xpid.CalcPID(systemTime);
                 driverY = m_Ypid.CalcPID(systemTime);
-                driverR = m_Rpid.CalcPID(systemTime);
+                driverR = -m_Rpid.CalcPID(systemTime);
 
 
                 break;
@@ -325,17 +361,6 @@ public class DrivetrainCommand extends Command
     public boolean isFinished()
     {
         return false;
-    }
-
-    private double addDeadZone(double driver, double limit)
-    {
-        double output;
-
-        if      (driver < -limit) output = (driver + limit)/(1-limit);
-        else if (driver >  limit) output = (driver - limit)/(1-limit);
-        else output = 0;
-
-        return output;
     }
 
 

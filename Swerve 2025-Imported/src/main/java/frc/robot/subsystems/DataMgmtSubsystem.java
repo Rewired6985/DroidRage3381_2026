@@ -47,6 +47,8 @@ public class DataMgmtSubsystem extends SubsystemBase
     public boolean AllianceIsRed = true;
     public CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
 
+    public boolean inRest = false;
+
     public class positionStruct
     {
 
@@ -309,7 +311,8 @@ public class DataMgmtSubsystem extends SubsystemBase
     {
         public boolean brake;
         public boolean resetGyro;
-        public boolean callIntake;
+        public boolean intake;
+        public boolean carousel;
     }
 
     public aimStruct      aim      = new aimStruct();
@@ -371,8 +374,8 @@ public class DataMgmtSubsystem extends SubsystemBase
     {
         double error = command - actual;
 
-        if      (actual >  90 && command < -90) error = error + 360;
-        else if (actual < -90 && command >  90) error = error - 360;
+        if      ((actual >  90) && (command < -90)) error = error + 360;
+        else if ((actual < -90) && (command >  90)) error = error - 360;
 
         return error;
     }
@@ -393,9 +396,14 @@ public class DataMgmtSubsystem extends SubsystemBase
         return inputs.resetGyro;
     }
 
-    public boolean callIntake()
+    public boolean intake()
     {
-        return inputs.callIntake;
+        return inputs.intake;
+    }
+
+    public boolean carousel()
+    {
+        return inputs.carousel;
     }
 
 }

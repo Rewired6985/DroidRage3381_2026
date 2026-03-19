@@ -60,7 +60,7 @@ public class IntakeCommand extends Command
             (currentPosition < (targetPosition + targetRange))) 
         {
             if (ms_this.inDeployMode) intakeSpeed = 0.95;
-            ms_data.inputs.callIntake = false;
+            ms_data.inputs.intake = false;
         }
 
         ms_this.setIntakeSpeed(intakeSpeed);

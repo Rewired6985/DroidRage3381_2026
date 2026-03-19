@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DataMgmtSubsystem;
@@ -55,16 +56,38 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    if (m_joystick.getRawButton(3)) ms_this.inputs.callIntake = true;
+                    if (m_joystick.getRawButton(3)) ms_this.inputs.intake = true;
+                    ms_this.aim.tracking = m_joystick.getRawButton(8);
                 }
                 else
                 {
-                    if (m_controller.x().getAsBoolean()) ms_this.inputs.callIntake = true;
+                    if (m_controller.x().getAsBoolean()) ms_this.inputs.intake = true;
+                    ms_this.aim.tracking = m_controller.povLeft().getAsBoolean();
                 }
                 break;
             }
             case AUTO:
             {
+                ms_this.inputs.intake = true;
+                break;
+            }
+        }
+
+        switch (ms_this.aim.state)
+        {
+            case ZERO:
+            {
+                ms_this.inputs.carousel = false;
+                break;
+            }
+            case TRANSITION:
+            {
+                ms_this.inputs.carousel = false;
+                break;
+            }
+            case FIRE:
+            {
+                ms_this.inputs.carousel = true;
                 break;
             }
         }
@@ -84,6 +107,8 @@ public class DataMgmtCommand extends Command
             if (baplo_est.isEmpty())      baplo_est = ms_this.position.baplo_estimator.estimateLowestAmbiguityPose(ms_this.position.b_result);
             ms_this.position.addMeasurement(baplo_est);
         }
+
+        SmartDashboard.putString("aim state", ms_this.aim.state.toString());
 
         ms_this.position.updateEstimator();
 

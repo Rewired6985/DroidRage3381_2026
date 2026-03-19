@@ -86,13 +86,6 @@ public class Constants
         OUTPOST_THEN_DEPOT,
     }
 
-    public static enum eMethod
-    {
-        CONTROLLER,
-        JOYSTICK
-    }
-
-
     /*   JOYSTICK INPUTS 
      * 1 - shoot
      * 2 - stop
