@@ -7,8 +7,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class IntakeSubsystem extends SubsystemBase
 {
 
-    private TalonFX in_motor  = new TalonFX(30);
-    private TalonFX out_motor = new TalonFX(31);
+    private TalonFX in_motor    = new TalonFX(11);
+    private TalonFX out_motor   = new TalonFX(10);
+    private TalonFX left_motor  = new TalonFX(16);
+    private TalonFX right_motor = new TalonFX(15);
     public boolean inDeployMode = false;
 
     public IntakeSubsystem()
@@ -24,12 +26,14 @@ public class IntakeSubsystem extends SubsystemBase
 
     public void setDeploySpeed(double set_speed)
     {
-        
+        right_motor.set(set_speed);
+        left_motor.set(-set_speed);
     }
 
     public double getEncoder()
     {
-        return 0;
+        double value = right_motor.getRotorPosition().getValueAsDouble();
+        return value;
     }
 
     

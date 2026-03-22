@@ -54,8 +54,6 @@ public class ShooterCommand extends Command
     @Override
     public void execute()
     {
-
-        double timestamp = Timer.getFPGATimestamp();
         
         double m_turretSpeed = 0;
         
@@ -124,21 +122,28 @@ public class ShooterCommand extends Command
             }
             case TRANSITION:
             {
-                m_targetVelocity = -0.9 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                m_targetVelocity = -0.95 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 
                 break;
             }
             case FIRE:
             {
-                m_targetVelocity = -0.9 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                m_targetVelocity = -0.95 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 break;
             }
         }
 
         // m_turretSpeed = m_turretPID.CalcPID(timestamp);
 
+
+
+
+
+
         // SmartDashboard.putNumber("shooter speed",   shooterSpeed);
         // SmartDashboard.putNumber("m_turret position", ms_this.getTurretPosition());
+        SmartDashboard.putNumber("shooter velocity", ms_this.getVelocity());
+        SmartDashboard.putNumber("set shooter speed", m_targetVelocity);
         ms_this.setShooterSpeed(m_targetVelocity);
         ms_this.setTurretSpeed(m_turretSpeed);
         

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -15,7 +16,10 @@ public class DataMgmtCommand extends Command
     private final DataMgmtSubsystem ms_this;
     private Joystick m_joystick;
     private CommandXboxController m_controller;
+    private CommandXboxController m_apac;
     private boolean usingJoystick;
+
+    private int counter = 0;
 
     public DataMgmtCommand(DataMgmtSubsystem subsystem, CommandXboxController controller)
     {
@@ -25,10 +29,11 @@ public class DataMgmtCommand extends Command
         addRequirements(subsystem);
     }
 
-    public DataMgmtCommand(DataMgmtSubsystem subsystem, Joystick joystick)
+    public DataMgmtCommand(DataMgmtSubsystem subsystem, CommandXboxController apac, Joystick joystick)
     {
         ms_this = subsystem;
         m_joystick = joystick;
+        m_apac = apac;
         usingJoystick = true;
         addRequirements(subsystem);
     }
@@ -56,8 +61,9 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    if (m_joystick.getRawButton(3)) ms_this.inputs.intake = true;
-                    ms_this.aim.tracking = m_joystick.getRawButton(8);
+                    //if (m_joystick.getRawButton(3)) 
+                    ms_this.inputs.intake = m_joystick.getRawButton(3);
+                    ms_this.aim.tracking = m_apac.b().getAsBoolean();
                 }
                 else
                 {
@@ -68,7 +74,14 @@ public class DataMgmtCommand extends Command
             }
             case AUTO:
             {
-                ms_this.inputs.intake = true;
+                // ms_this.inputs.intake = true;
+                if (counter == 0)
+                {
+                    counter++;
+                    ms_this.inputs.resetGyro = true;
+                }
+                ms_this.aim.tracking = (Timer.getMatchTime() < 10);
+                SmartDashboard.putNumber("timestamp", Timer.getMatchTime());
                 break;
             }
         }

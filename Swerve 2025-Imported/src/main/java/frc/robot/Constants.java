@@ -87,11 +87,11 @@ public class Constants
     }
 
     /*   JOYSTICK INPUTS 
-     * 1 - shoot
-     * 2 - stop
-     * 3 - intake
-     * 4 - brake
-     * 7 - reset gyro
+     * 1 - start shooter (trigger finger)
+     * 2 - stop shooter  (back thumb)
+     * 3 - intake        (left thumb)
+     * 4 - reset gyro    (right thumb)
+     * 7 - brake         ()
     */
 
     /*   CONTROLLER INPUTS 

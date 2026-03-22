@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.PIDFController;
 import frc.robot.subsystems.DataMgmtSubsystem;
@@ -12,7 +13,7 @@ public class IntakeCommand extends Command
 
     private IntakeSubsystem ms_this;
     private DataMgmtSubsystem ms_data;
-    private double intakeSpeed = 0;
+    private double intakeSpeed = 0.95;
     private double deploySpeed = 0;
 
     private double targetPosition;
@@ -35,11 +36,13 @@ public class IntakeCommand extends Command
         {
             ms_this.inDeployMode = false;
             targetPosition = retractTarget;
+            deploySpeed = 0.5;
             intakeSpeed = 0;
         }
-        else                        
+        else
         {
             ms_this.inDeployMode = true;
+            deploySpeed = -0.5;
             targetPosition = deployTarget;
         }
     }
@@ -56,21 +59,23 @@ public class IntakeCommand extends Command
         // deploySpeed   = m_pid.CalcPID();
 
 
-        if ((currentPosition > (targetPosition - targetRange)) && 
-            (currentPosition < (targetPosition + targetRange))) 
-        {
-            if (ms_this.inDeployMode) intakeSpeed = 0.95;
-            ms_data.inputs.intake = false;
-        }
+        // if ((currentPosition > (targetPosition - targetRange)) && 
+        //     (currentPosition < (targetPosition + targetRange))) 
+        // {
+        //     if (ms_this.inDeployMode) intakeSpeed = 0.95;
+        //     ms_data.inputs.intake = false;
+        // }
 
-        ms_this.setIntakeSpeed(intakeSpeed);
+        // ms_this.setIntakeSpeed(intakeSpeed);
         ms_this.setDeploySpeed(deploySpeed);
+        SmartDashboard.putNumber("position", currentPosition);
     }
 
     @Override
     public void end(boolean interrupted)
     {
-
+        ms_this.setIntakeSpeed(0);
+        ms_this.setDeploySpeed(0);
     }
 
     @Override

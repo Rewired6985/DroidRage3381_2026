@@ -309,10 +309,10 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     public class inputStruct
     {
-        public boolean brake;
-        public boolean resetGyro;
-        public boolean intake;
-        public boolean carousel;
+        public boolean brake = false;
+        public boolean resetGyro = false;
+        public boolean intake = false;
+        public boolean carousel = false;
     }
 
     public aimStruct      aim      = new aimStruct();
@@ -338,12 +338,12 @@ public class DataMgmtSubsystem extends SubsystemBase
             case TRANSITION: 
             {
                 if (aim.tracking && aim.shoot) aim.state = eAim.FIRE;
+                if (aim.stop)   aim.state = eAim.ZERO;
                 break;
             }
             case FIRE:
             {
                 if (!aim.shoot) aim.state = eAim.TRANSITION;
-                if (aim.stop)   aim.state = eAim.ZERO;
                 break;
             }
         }

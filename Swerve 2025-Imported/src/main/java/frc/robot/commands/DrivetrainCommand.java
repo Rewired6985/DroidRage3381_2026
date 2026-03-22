@@ -1,10 +1,7 @@
 package frc.robot.commands;
 
-import javax.lang.model.util.ElementScanner14;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
@@ -94,7 +91,6 @@ public class DrivetrainCommand extends Command
 
 
         boolean allyRed = ms_data.AllianceIsRed;
-        boolean inAllianceZone;
         
 
         double driverX = 0;
@@ -107,7 +103,6 @@ public class DrivetrainCommand extends Command
             if      (drivetrainX > 40.880) 
             {
                 shotTarget = Constants.shot_REDHUB;
-                inAllianceZone = true;
             }
             else if (drivetrainX > 15.13)
             {
@@ -136,7 +131,6 @@ public class DrivetrainCommand extends Command
             else if (drivetrainX < 13.297)         
             {
                 shotTarget = Constants.shot_BLUEHUB;
-                inAllianceZone = true;
             }
         }
 
@@ -200,8 +194,8 @@ public class DrivetrainCommand extends Command
 
                     driverT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
-                    ms_data.inputs.brake     = m_joystick.getRawButton(4);
-                    ms_data.inputs.resetGyro = m_joystick.getRawButton(7);
+                    ms_data.inputs.brake     = m_joystick.getRawButton(7);
+                    ms_data.inputs.resetGyro = m_joystick.getRawButton(4);
 
                 }
                 else

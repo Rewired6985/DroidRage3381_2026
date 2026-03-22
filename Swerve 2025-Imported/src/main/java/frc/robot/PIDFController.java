@@ -5,8 +5,6 @@ import java.lang.Math;
 public class PIDFController
 {
 
-    //TODO add docs, add functions for setting variables
-
     /**
      * Proportional gain
      */

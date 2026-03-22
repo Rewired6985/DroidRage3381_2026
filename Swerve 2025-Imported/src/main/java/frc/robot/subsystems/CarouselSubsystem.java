@@ -4,13 +4,12 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class CarouselSubsystem extends SubsystemBase
 {
 
-    final TalonFX m_motor = new TalonFX(43);
+    final TalonFX m_motor = new TalonFX(14);
     
     final VelocityVoltage m_velocity = new VelocityVoltage(0);
 
@@ -36,7 +35,6 @@ public class CarouselSubsystem extends SubsystemBase
 
     public void set(double speed)
     {
-        SmartDashboard.putNumber("carousel speed", speed);
         m_motor.set(speed);
     }
 
