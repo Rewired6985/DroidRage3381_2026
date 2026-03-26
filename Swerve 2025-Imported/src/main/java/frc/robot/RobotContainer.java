@@ -67,7 +67,7 @@ public class RobotContainer {
     private DataMgmtSubsystem ms_data          = new DataMgmtSubsystem();
     private CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private DrivetrainSubsystem ms_drivetrain  = new DrivetrainSubsystem();
-    // private IntakeSubsystem ms_intake          = new IntakeSubsystem();
+    private IntakeSubsystem ms_intake          = new IntakeSubsystem();
     private CarouselSubsystem ms_carousel      = new CarouselSubsystem();
     private ShooterSubsystem ms_shooter        = new ShooterSubsystem();
 
@@ -135,6 +135,9 @@ public class RobotContainer {
 
         // callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
         callCarousel.whileTrue(new CarouselCommand(ms_carousel, 0.95));
+
+        apac.x().whileTrue(new IntakeCommand(ms_intake, ms_data, 0.9));
+        apac.y().whileTrue(new IntakeCommand(ms_intake, ms_data, -0.9));
 
 
         // Run SysId routines when holding back/start and X/Y.

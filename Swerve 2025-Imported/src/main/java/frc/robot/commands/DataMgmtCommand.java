@@ -64,12 +64,16 @@ public class DataMgmtCommand extends Command
                     //if (m_joystick.getRawButton(3)) 
                     ms_this.inputs.intake = m_joystick.getRawButton(3);
                     ms_this.aim.tracking = m_apac.b().getAsBoolean();
+
                 }
                 else
                 {
                     if (m_controller.x().getAsBoolean()) ms_this.inputs.intake = true;
                     ms_this.aim.tracking = m_controller.povLeft().getAsBoolean();
                 }
+
+                ms_this.resetFlag = m_apac.x().getAsBoolean();
+
                 break;
             }
             case AUTO:

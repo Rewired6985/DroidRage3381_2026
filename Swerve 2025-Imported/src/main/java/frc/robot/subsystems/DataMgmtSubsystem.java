@@ -47,6 +47,9 @@ public class DataMgmtSubsystem extends SubsystemBase
     public boolean AllianceIsRed = true;
     public CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
 
+    //TODO delete this
+    public boolean resetFlag = false;
+
     public boolean inRest = false;
 
     public class positionStruct
@@ -73,8 +76,9 @@ public class DataMgmtSubsystem extends SubsystemBase
         final Pose2d middleRedPosition   = new Pose2d(13,4,blueInitRotation);
         final Pose2d rightRedPosition    = new Pose2d(13,5,blueInitRotation);
 
+        //right
         //pablo configs                          (X,Y,Z,R,P,Y)
-        private double[] pablo_pos                 = {0.20909788, -0.3599434, 0.58316622, 0, -10, 90};
+        private double[] pablo_pos                 = {0.1524, -0.3429, 0.4699, 0, -10, 90};
         private PhotonCamera pablo                 = new PhotonCamera("DR3381_pablo");
         private Translation3d pablo_translation    = new Translation3d(pablo_pos[0],pablo_pos[1],pablo_pos[2]);
         private Rotation3d    pablo_rotation       = new Rotation3d(Math.toRadians(pablo_pos[3]),Math.toRadians(pablo_pos[4]),Math.toRadians(pablo_pos[5]));
@@ -84,8 +88,9 @@ public class DataMgmtSubsystem extends SubsystemBase
         public PhotonPoseEstimator pablo_estimator = new PhotonPoseEstimator(field_2026, pablo_transform);
         public PhotonPipelineResult p_result;
 
+        //left
         //baplo configs                           (X,Y,Z,R,P,Y)
-        private double[] baplo_pos              = {0.20909788, 0.36712398, 0.58316622, 0, -10, -90};
+        private double[] baplo_pos              = {0.1524, 0.3429, 0.4699, 0, -10, -90};
         private PhotonCamera baplo              = new PhotonCamera("DR3381_baplo");
         private Translation3d baplo_translation = new Translation3d(baplo_pos[0],baplo_pos[1],baplo_pos[2]);
         private Rotation3d    baplo_rotation    = new Rotation3d(Math.toRadians(baplo_pos[3]),Math.toRadians(baplo_pos[4]),Math.toRadians(baplo_pos[5]));

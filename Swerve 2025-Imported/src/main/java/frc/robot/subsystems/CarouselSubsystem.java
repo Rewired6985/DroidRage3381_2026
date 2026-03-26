@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -15,15 +17,22 @@ public class CarouselSubsystem extends SubsystemBase
 
     private static double IO_RATIO = 0.021818182;
 
+    private final TalonFXConfiguration config = new TalonFXConfiguration().withCurrentLimits(new CurrentLimitsConfigs()
+        .withSupplyCurrentLimit(50)
+        .withStatorCurrentLimit(80)
+        .withSupplyCurrentLimitEnable(true)
+        .withStatorCurrentLimitEnable(true));
+
 
     public CarouselSubsystem()
     {
-        var slot0Configs = new Slot0Configs();
-        slot0Configs.kV = 0.0;
-        slot0Configs.kP = 0.0;
-        slot0Configs.kI = 0.0;
-        slot0Configs.kD = 0.0;
-        m_motor.getConfigurator().apply(slot0Configs, 0.050);
+        // var slot0Configs = new Slot0Configs();
+        // slot0Configs.kV = 0.0;
+        // slot0Configs.kP = 0.0;
+        // slot0Configs.kI = 0.0;
+        // slot0Configs.kD = 0.0;
+        // m_motor.getConfigurator().apply(slot0Configs, 0.050);
+        m_motor.getConfigurator().apply(config);
     }
 
     public void setSpeed(double speed_rpm)

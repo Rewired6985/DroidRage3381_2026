@@ -22,7 +22,7 @@ public class ShooterCommand extends Command
     private double m_targetVelocity = 0;
     private double m_turretTarget = 0;
 
-    private PIDFController m_turretPID = new PIDFController(0,0,0,0);
+    private PIDFController m_turretPID = new PIDFController(0.01,0,0,0);
 
     private double COMPENSATION = 1;
 
@@ -56,6 +56,10 @@ public class ShooterCommand extends Command
     {
         
         double m_turretSpeed = 0;
+
+        double timestamp = Timer.getFPGATimestamp();
+
+        double turretPosition = ms_data.rolloverHelper(ms_this.getTurretPosition());
         
         double yaw = ms_data.position.getYaw();
 
@@ -64,14 +68,16 @@ public class ShooterCommand extends Command
 
         double differenceX = ms_data.aim.turretX - m_targetX;
         double differenceY = ms_data.aim.turretY - m_targetY;
-        double m_targetAngle = (Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180;
+        double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180);
 
         if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
         else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
+        
+        SmartDashboard.putNumber("target angle", m_targetAngle);
 
         m_turretTarget = -ms_data.rolloverHelper(yaw + m_targetAngle);
 
-        // SmartDashboard.putNumber("turret target", m_turretTarget);
+        SmartDashboard.putNumber("turret target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
         
 
@@ -85,6 +91,8 @@ public class ShooterCommand extends Command
         
         // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
 
+        m_turretPID.m_Error = ms_data.errorHelper(turretPosition, m_turretTarget);
+
         
         switch (ms_data.Mode)
         {
@@ -94,10 +102,6 @@ public class ShooterCommand extends Command
                 {
                     ms_data.aim.shoot = m_joystick.getRawButton(1);
                     ms_data.aim.stop  = m_joystick.getRawButton(2);
-
-                    if      (m_joystick.getRawButton(10)) m_turretSpeed =  0.4;
-                    else if (m_joystick.getRawButton(9)) m_turretSpeed = -0.4;
-                    else                                        m_turretSpeed =  0;
                 }
                 else
                 {
@@ -122,32 +126,35 @@ public class ShooterCommand extends Command
             }
             case TRANSITION:
             {
-                m_targetVelocity = -0.95 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 
                 break;
             }
             case FIRE:
             {
-                m_targetVelocity = -0.95 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
                 break;
             }
         }
 
-        // m_turretSpeed = m_turretPID.CalcPID(timestamp);
+        m_turretSpeed = m_turretPID.CalcPID(timestamp);
 
 
-
-
-
-
-        // SmartDashboard.putNumber("shooter speed",   shooterSpeed);
-        // SmartDashboard.putNumber("m_turret position", ms_this.getTurretPosition());
         SmartDashboard.putNumber("shooter velocity", ms_this.getVelocity());
         SmartDashboard.putNumber("set shooter speed", m_targetVelocity);
+
+        
+        
+        if (ms_data.resetFlag)
+        {
+            ms_this.zeroEncoder();
+            m_turretSpeed = 0;
+        }
+
         ms_this.setShooterSpeed(m_targetVelocity);
         ms_this.setTurretSpeed(m_turretSpeed);
         
-        SmartDashboard.putNumber("TurretPosition", ms_this.getTurretPosition());
+        SmartDashboard.putNumber("TurretPosition", turretPosition);
 
     }
 
