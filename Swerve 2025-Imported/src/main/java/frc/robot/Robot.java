@@ -108,7 +108,7 @@ public class Robot extends TimedRobot {
 	{
 	    inSim = true;
 	    m_robotContainer.doSimStuff();
-	    m_robotContainer.updateLogger();
+	    // m_robotContainer.updateLogger();
 	}
 
 }

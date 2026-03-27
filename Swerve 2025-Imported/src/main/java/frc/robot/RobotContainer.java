@@ -76,8 +76,8 @@ public class RobotContainer {
         
     public AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
-    private DoubleLogEntry XLog;
-    private DoubleLogEntry YLog;
+    // private DoubleLogEntry XLog;
+    // private DoubleLogEntry YLog;
 
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -161,8 +161,8 @@ public class RobotContainer {
         DataLogManager.start();
         DataLog log = DataLogManager.getLog();
 
-        XLog = new DoubleLogEntry(log, "x");
-        YLog = new DoubleLogEntry(log, "y");
+        // XLog = new DoubleLogEntry(log, "x");
+        // YLog = new DoubleLogEntry(log, "y");
 
         final int choose_left   = 1;
         final int choose_middle = 2;
@@ -212,8 +212,7 @@ public class RobotContainer {
 
     public void updateLogger()
     {
-        XLog.append(drivetrain.getState().Pose.getX());
-        YLog.append(drivetrain.getState().Pose.getY());
+        // XLog.append(drivetrain.getState().Pose.getX());+
     }
 
     public void setDriveMode(Constants.eMode mode)

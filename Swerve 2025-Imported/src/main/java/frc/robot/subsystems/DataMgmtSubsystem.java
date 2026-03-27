@@ -52,6 +52,30 @@ public class DataMgmtSubsystem extends SubsystemBase
 
     public boolean inRest = false;
 
+    @Override
+    public void periodic()
+    {
+
+        boolean pabloResultValid = position.getPabloValidity();
+        boolean baploResultValid = position.getBaploValidity();
+
+        if(pabloResultValid)
+        {
+            Optional<EstimatedRobotPose>  pablo_est = position.pablo_estimator.estimateCoprocMultiTagPose(position.getPabloResult());
+            if (pablo_est.isEmpty())      pablo_est = position.pablo_estimator.estimateLowestAmbiguityPose(position.p_result);
+            position.addMeasurement(pablo_est);
+        } 
+
+        if (baploResultValid)
+        {
+            Optional<EstimatedRobotPose>  baplo_est = position.baplo_estimator.estimateCoprocMultiTagPose(position.getBaploResult());
+            if (baplo_est.isEmpty())      baplo_est = position.baplo_estimator.estimateLowestAmbiguityPose(position.b_result);
+            position.addMeasurement(baplo_est);
+        }
+        
+        position.updateEstimator();
+    }
+
     public class positionStruct
     {
 

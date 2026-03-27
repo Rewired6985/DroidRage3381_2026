@@ -194,9 +194,6 @@ public class DrivetrainCommand extends Command
 
                     driverT = ((-m_joystick.getThrottle() + 1) * 0.4) + 0.2;
 
-                    ms_data.inputs.brake     = m_joystick.getRawButton(7);
-                    ms_data.inputs.resetGyro = m_joystick.getRawButton(4);
-
                 }
                 else
                 {
