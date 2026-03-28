@@ -102,7 +102,7 @@ public class RobotContainer {
     }
 
 
-    private final CommandXboxController controller  = new CommandXboxController(0);
+    // private final CommandXboxController controller  = new CommandXboxController(0);
     private final CommandXboxController apac        = new CommandXboxController(1);
     private final Joystick              joystick    = new Joystick(5);
     // private final CommandXboxController a_pac1 = new CommandXboxController(2);
@@ -130,7 +130,7 @@ public class RobotContainer {
              .withRotationalRate(ms_drivetrain.m_Rswerve * MaxAngularRate))
         );
 
-        controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
         apac.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
@@ -148,7 +148,7 @@ public class RobotContainer {
         // controller.start().and(controller.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on y press
-        controller.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // controller.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         resetField.onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);

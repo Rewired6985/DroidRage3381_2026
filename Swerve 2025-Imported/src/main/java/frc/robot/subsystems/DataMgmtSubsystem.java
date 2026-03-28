@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -17,6 +18,8 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,6 +31,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -55,24 +60,6 @@ public class DataMgmtSubsystem extends SubsystemBase
     @Override
     public void periodic()
     {
-
-        boolean pabloResultValid = position.getPabloValidity();
-        boolean baploResultValid = position.getBaploValidity();
-
-        if(pabloResultValid)
-        {
-            Optional<EstimatedRobotPose>  pablo_est = position.pablo_estimator.estimateCoprocMultiTagPose(position.getPabloResult());
-            if (pablo_est.isEmpty())      pablo_est = position.pablo_estimator.estimateLowestAmbiguityPose(position.p_result);
-            position.addMeasurement(pablo_est);
-        } 
-
-        if (baploResultValid)
-        {
-            Optional<EstimatedRobotPose>  baplo_est = position.baplo_estimator.estimateCoprocMultiTagPose(position.getBaploResult());
-            if (baplo_est.isEmpty())      baplo_est = position.baplo_estimator.estimateLowestAmbiguityPose(position.b_result);
-            position.addMeasurement(baplo_est);
-        }
-        
         position.updateEstimator();
     }
 
@@ -89,9 +76,12 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         private AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
+        private Matrix<N3, N1> multiTagConfidence = VecBuilder.fill(0.25, 0.25, 0.5);
+        private Matrix<N3, N1> singleTagConfidence = VecBuilder.fill(2,   2,    4);
+
         //init positions & rotations
-        final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(180));
-        final Rotation2d redInitRotation  = new Rotation2d(Math.toRadians(0));
+        final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(0));
+        final Rotation2d redInitRotation  = new Rotation2d(Math.toRadians(180));
 
         final Pose2d leftBluePosition    = new Pose2d(3.5,5,redInitRotation);
         final Pose2d middleBluePosition  = new Pose2d(3.5,4,redInitRotation);  
@@ -110,7 +100,6 @@ public class DataMgmtSubsystem extends SubsystemBase
         private SimCameraProperties pabloProp      = new SimCameraProperties();
         private PhotonCameraSim sim_pablo          = new PhotonCameraSim(pablo, pabloProp);
         public PhotonPoseEstimator pablo_estimator = new PhotonPoseEstimator(field_2026, pablo_transform);
-        public PhotonPipelineResult p_result;
 
         //left
         //baplo configs                           (X,Y,Z,R,P,Y)
@@ -122,7 +111,6 @@ public class DataMgmtSubsystem extends SubsystemBase
         private SimCameraProperties baploProp   = new SimCameraProperties();
         private PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
         public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
-        public PhotonPipelineResult b_result;
 
 
         //variables for setting up simulated drivetrain
@@ -144,40 +132,72 @@ public class DataMgmtSubsystem extends SubsystemBase
             new Pose2d(4.5,4,pigeon.getRotation2d())
         );
 
-        public PhotonPipelineResult getPabloResult()
+        private void updateEstimatePablo()
         {
-            return pablo.getLatestResult();
+
+            List<PhotonPipelineResult> list = pablo.getAllUnreadResults();
+
+            list.sort((PhotonPipelineResult a, PhotonPipelineResult b) -> 
+            {
+                int val;
+
+                if (a.getTimestampSeconds() >= b.getTimestampSeconds()) val = 1;
+                else                                                    val = -1;
+
+                return val;
+            });
+
+
+            for (PhotonPipelineResult result : list)
+            {
+                if (result.hasTargets())
+                {
+                    Optional<EstimatedRobotPose>  estimate = pablo_estimator
+                                                            .estimateCoprocMultiTagPose(result);
+                    Matrix<N3, N1> confidence = multiTagConfidence;
+                    if (estimate.isEmpty())      
+                    {
+                        estimate   = pablo_estimator.estimateLowestAmbiguityPose(result);
+                        confidence = singleTagConfidence;
+                    }
+                    addMeasurement(estimate, confidence);
+                }
+            }
         }
 
-        public PhotonPipelineResult getBaploResult()
+        private void updateEstimateBaplo()
         {
-            return baplo.getLatestResult();
+
+            List<PhotonPipelineResult> list = baplo.getAllUnreadResults();
+
+            list.sort((PhotonPipelineResult a, PhotonPipelineResult b) -> 
+            {
+                int val;
+
+                if (a.getTimestampSeconds() >= b.getTimestampSeconds()) val = 1;
+                else                                                    val = -1;
+
+                return val;
+            });
+
+
+            for (PhotonPipelineResult result : list)
+            {
+                if (result.hasTargets())
+                {
+                    Optional<EstimatedRobotPose>  estimate = baplo_estimator
+                                                            .estimateCoprocMultiTagPose(result);
+                    Matrix<N3, N1> confidence = multiTagConfidence;
+                    if (estimate.isEmpty())      
+                    {
+                        estimate   = baplo_estimator.estimateLowestAmbiguityPose(result);
+                        confidence = singleTagConfidence;
+                    }
+                    addMeasurement(estimate, confidence);
+                }
+            }
         }
 
-        public boolean getPabloValidity()
-        {
-            p_result = pablo.getLatestResult();
-
-            return p_result.hasTargets();
-        }
-
-        public PhotonTrackedTarget getPabloTarget()
-        {
-            return p_result.getBestTarget();
-        }
-
-        public boolean getBaploValidity()
-        {
-            b_result = baplo.getLatestResult();
-
-            return b_result.hasTargets();
-        }
-   
-        public PhotonTrackedTarget getBaploTarget()
-        {
-            return b_result.getBestTarget();
-        }
-        
         /**
          * specifically used for getting the StatusSignal<Angle> heading of the robot
          * @return
@@ -202,13 +222,18 @@ public class DataMgmtSubsystem extends SubsystemBase
             m_drivetrain = input;
         }
 
-        public void addMeasurement(Optional<EstimatedRobotPose> estimate)
+        public void addMeasurement(Optional<EstimatedRobotPose> estimate, Matrix<N3, N1> confidence)
         {
-            poseEstimator.addVisionMeasurement(estimate.get().estimatedPose.toPose2d(), estimate.get().timestampSeconds);
+            poseEstimator.addVisionMeasurement(estimate.get().estimatedPose.toPose2d(), 
+                                               estimate.get().timestampSeconds, 
+                                               confidence);
         }
 
         public void updateEstimator()
         {
+
+            updateEstimateBaplo();
+            updateEstimatePablo();
 
             positions[0] = m_drivetrain.getModule(0).getCachedPosition();
             positions[1] = m_drivetrain.getModule(1).getCachedPosition();

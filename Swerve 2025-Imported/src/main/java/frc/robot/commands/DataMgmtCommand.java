@@ -113,7 +113,6 @@ public class DataMgmtCommand extends Command
         }
 
 
-
         SmartDashboard.putString("aim state", ms_this.aim.state.toString());
 
 

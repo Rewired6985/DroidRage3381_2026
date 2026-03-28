@@ -22,7 +22,7 @@ public class ShooterCommand extends Command
     private double m_targetVelocity = 0;
     private double m_turretTarget = 0;
 
-    private PIDFController m_turretPID = new PIDFController(0.01,0,0,0);
+    private PIDFController m_turretPID = new PIDFController(0.02,0,0,0);
 
     private double COMPENSATION = 1;
 
@@ -68,14 +68,16 @@ public class ShooterCommand extends Command
 
         double differenceX = ms_data.aim.turretX - m_targetX;
         double differenceY = ms_data.aim.turretY - m_targetY;
-        double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS) + 180);
+        double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
 
         if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
         else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
+
+        m_targetAngle *= -1;
         
         SmartDashboard.putNumber("target angle", m_targetAngle);
 
-        m_turretTarget = -ms_data.rolloverHelper(yaw + m_targetAngle);
+        m_turretTarget = ms_data.rolloverHelper(yaw + m_targetAngle);
 
         SmartDashboard.putNumber("turret target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
@@ -152,7 +154,7 @@ public class ShooterCommand extends Command
         }
 
         ms_this.setShooterSpeed(m_targetVelocity);
-        ms_this.setTurretSpeed(m_turretSpeed);
+        ms_this.setTurretSpeed(-m_turretSpeed);
         
         SmartDashboard.putNumber("TurretPosition", turretPosition);
 

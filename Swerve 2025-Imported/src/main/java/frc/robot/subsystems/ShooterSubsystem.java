@@ -66,7 +66,7 @@ public class ShooterSubsystem extends SubsystemBase
 
     public double getTurretPosition()
     {
-        double value = turret_encoder.getPosition() * -2.66666667; //* 0.06857142857;
+        double value = turret_encoder.getPosition() * 2.65;
         return value;
     }
 
