@@ -386,7 +386,7 @@ public class DataMgmtSubsystem extends SubsystemBase
         {
             case ZERO: 
             {
-                if (aim.shoot) aim.state = eAim.TRANSITION;
+                if (!aim.stop) aim.state = eAim.TRANSITION;
                 break;
             }
             case TRANSITION: 

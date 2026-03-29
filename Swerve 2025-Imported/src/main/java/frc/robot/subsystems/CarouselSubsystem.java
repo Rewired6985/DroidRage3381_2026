@@ -6,6 +6,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class CarouselSubsystem extends SubsystemBase
@@ -15,7 +17,7 @@ public class CarouselSubsystem extends SubsystemBase
     
     final VelocityVoltage m_velocity = new VelocityVoltage(0);
 
-    private static double IO_RATIO = 0.021818182;
+    private static double IO_RATIO = 45.833333;
 
     private final TalonFXConfiguration config = new TalonFXConfiguration().withCurrentLimits(new CurrentLimitsConfigs()
         .withSupplyCurrentLimit(50)
@@ -26,20 +28,28 @@ public class CarouselSubsystem extends SubsystemBase
 
     public CarouselSubsystem()
     {
-        // var slot0Configs = new Slot0Configs();
-        // slot0Configs.kV = 0.0;
-        // slot0Configs.kP = 0.0;
-        // slot0Configs.kI = 0.0;
-        // slot0Configs.kD = 0.0;
-        // m_motor.getConfigurator().apply(slot0Configs, 0.050);
+        m_velocity.Slot = 0;
+
+        config.Slot0.kS = 0.1;
+        config.Slot0.kV = 0.12;
+        config.Slot0.kP = 0.11;
+        config.Slot0.kI = 0;
+        config.Slot0.kD = 0;
+
         m_motor.getConfigurator().apply(config);
     }
 
     public void setSpeed(double speed_rpm)
     {
         double speed_rps = (speed_rpm/60) * IO_RATIO;
+        SmartDashboard.putNumber("carousel speed", speed_rpm);
         m_velocity.Slot = 0;
         m_motor.setControl (m_velocity.withVelocity(speed_rps));
+    }
+
+    public double getVelocity()
+    { 
+        return m_motor.getVelocity().getValue().in(Units.Rotations.per(Units.Minute))/IO_RATIO;
     }
 
     public void set(double speed)

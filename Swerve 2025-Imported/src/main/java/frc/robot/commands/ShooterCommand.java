@@ -73,6 +73,8 @@ public class ShooterCommand extends Command
         if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
         else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
 
+        double distance = Math.sqrt(differenceX * differenceX + differenceY * differenceY);
+
         m_targetAngle *= -1;
         
         SmartDashboard.putNumber("target angle", m_targetAngle);
@@ -83,18 +85,19 @@ public class ShooterCommand extends Command
         SmartDashboard.putNumber("yaw", yaw);
         
 
-        ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
-                            (Math.cos(ms_data.aim.angle) * 
-                           Math.sqrt((2*(Constants.SHOOTERHEIGHT - ms_data.aim.target[2] + 
-                                        (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
-                                     (Constants.GRAVITY))));
+        // ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
+        //                     (Math.cos(ms_data.aim.angle) * 
+        //                    Math.sqrt((2*(Constants.SHOOTERHEIGHT - ms_data.aim.target[2] + 
+        //                                 (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
+        //                              (Constants.GRAVITY))));
 
-
-        
         // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
 
-        m_turretPID.m_Error = ms_data.errorHelper(turretPosition, m_turretTarget);
 
+        if      (distance < 11) 
+
+
+        m_turretPID.m_Error = ms_data.errorHelper(turretPosition, m_turretTarget);
         
         switch (ms_data.Mode)
         {
@@ -128,22 +131,32 @@ public class ShooterCommand extends Command
             }
             case TRANSITION:
             {
-                m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
-                
+                // m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                // if (distance < 14) m_targetVelocity = 4000;
+                // else               m_targetVelocity = 170 * distance + 1600;
                 break;
             }
             case FIRE:
             {
-                m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                // m_targetVelocity = 0.750 /*(ms_data.aim.fuelVelocity * 57.29578) * COMPENSATION*/;
+                // if (distance < 14) m_targetVelocity = 4000;
+                // else               m_targetVelocity = (170 * distance) + 1600;
                 break;
             }
         }
 
+        SmartDashboard.putNumber("distance", distance);
+
+        double currentVelocity = -ms_this.getVelocity();
+        m_targetVelocity = 4000;
+        
+        ms_data.aim.tracking = (Math.abs(m_targetVelocity - currentVelocity) < 50) /*&&  (Math.abs(m_turretPID.m_Error) < 5)*/;
+
         m_turretSpeed = m_turretPID.CalcPID(timestamp);
 
 
-        SmartDashboard.putNumber("shooter velocity", ms_this.getVelocity());
-        SmartDashboard.putNumber("set shooter speed", m_targetVelocity);
+        SmartDashboard.putNumber("shooter current", currentVelocity);
+        SmartDashboard.putNumber("shooter target", m_targetVelocity);
 
         
         
@@ -153,7 +166,7 @@ public class ShooterCommand extends Command
             m_turretSpeed = 0;
         }
 
-        ms_this.setShooterSpeed(m_targetVelocity);
+        ms_this.setShooterVelocity(m_targetVelocity);
         ms_this.setTurretSpeed(-m_turretSpeed);
         
         SmartDashboard.putNumber("TurretPosition", turretPosition);

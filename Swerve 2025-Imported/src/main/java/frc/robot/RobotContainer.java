@@ -134,7 +134,7 @@ public class RobotContainer {
         apac.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
-        callCarousel.whileTrue(new CarouselCommand(ms_carousel, 0.95));
+        callCarousel.whileTrue(new CarouselCommand(ms_carousel));
 
         apac.x().whileTrue(new IntakeCommand(ms_intake, ms_data, 0.9));
         apac.y().whileTrue(new IntakeCommand(ms_intake, ms_data, -0.9));

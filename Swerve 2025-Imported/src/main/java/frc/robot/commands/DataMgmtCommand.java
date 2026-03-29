@@ -66,7 +66,6 @@ public class DataMgmtCommand extends Command
                 {
                     //if (m_joystick.getRawButton(3)) 
                     ms_this.inputs.intake = m_joystick.getRawButton(3);
-                    ms_this.aim.tracking = m_b.getAsBoolean();
                 }
                 else
                 {
