@@ -105,8 +105,6 @@ public class RobotContainer {
     // private final CommandXboxController controller  = new CommandXboxController(0);
     private final CommandXboxController apac        = new CommandXboxController(1);
     private final Joystick              joystick    = new Joystick(5);
-    // private final CommandXboxController a_pac1 = new CommandXboxController(2);
-    // private final CommandXboxController a_pac2 = new CommandXboxController(3);
 
 
 
@@ -117,7 +115,7 @@ public class RobotContainer {
         Trigger callIntake   = new Trigger(ms_data::intake);
         Trigger callCarousel = new Trigger(ms_data::carousel);
 
-        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick));
+        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick, apac));
         ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
         ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, apac, joystick));
         // Note that X is defined as forward according to WPILib convention,

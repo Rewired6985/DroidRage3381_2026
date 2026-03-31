@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants;
 import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.PIDFController;
@@ -23,8 +22,6 @@ public class ShooterCommand extends Command
     private double m_turretTarget = 0;
 
     private PIDFController m_turretPID = new PIDFController(0.02,0,0,0);
-
-    private double COMPENSATION = 1;
 
     public ShooterCommand(ShooterSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
     {
@@ -63,23 +60,23 @@ public class ShooterCommand extends Command
         
         double yaw = ms_data.position.getYaw();
 
-        double m_targetX = ms_data.aim.target[0];
-        double m_targetY = ms_data.aim.target[1];
+        // double m_targetX = ms_data.aim.target[0];
+        // double m_targetY = ms_data.aim.target[1];
 
-        double differenceX = ms_data.aim.turretX - m_targetX;
-        double differenceY = ms_data.aim.turretY - m_targetY;
-        double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
+        // double differenceX = ms_data.aim.turretX - m_targetX;
+        // double differenceY = ms_data.aim.turretY - m_targetY;
+        // double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
 
-        if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
-        else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
+        // if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
+        // else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
 
-        double distance = Math.sqrt(differenceX * differenceX + differenceY * differenceY);
+        // double distance = Math.sqrt(differenceX * differenceX + differenceY * differenceY);
 
-        m_targetAngle *= -1;
+        // m_targetAngle *= -1;
         
-        SmartDashboard.putNumber("target angle", m_targetAngle);
+        // SmartDashboard.putNumber("target angle", m_targetAngle);
 
-        m_turretTarget = ms_data.rolloverHelper(yaw + m_targetAngle);
+        // m_turretTarget = ms_data.rolloverHelper(yaw + m_targetAngle);
 
         SmartDashboard.putNumber("turret target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
@@ -92,9 +89,6 @@ public class ShooterCommand extends Command
         //                              (Constants.GRAVITY))));
 
         // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
-
-
-        if      (distance < 11) 
 
 
         m_turretPID.m_Error = ms_data.errorHelper(turretPosition, m_turretTarget);
@@ -145,8 +139,6 @@ public class ShooterCommand extends Command
             }
         }
 
-        SmartDashboard.putNumber("distance", distance);
-
         double currentVelocity = -ms_this.getVelocity();
         m_targetVelocity = 4000;
         
@@ -158,18 +150,8 @@ public class ShooterCommand extends Command
         SmartDashboard.putNumber("shooter current", currentVelocity);
         SmartDashboard.putNumber("shooter target", m_targetVelocity);
 
-        
-        
-        if (ms_data.resetFlag)
-        {
-            ms_this.zeroEncoder();
-            m_turretSpeed = 0;
-        }
-
         ms_this.setShooterVelocity(m_targetVelocity);
         ms_this.setTurretSpeed(-m_turretSpeed);
-        
-        SmartDashboard.putNumber("TurretPosition", turretPosition);
 
     }
 

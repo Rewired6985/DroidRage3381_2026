@@ -10,7 +10,6 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
@@ -51,9 +50,6 @@ public class DataMgmtSubsystem extends SubsystemBase
     public boolean inSim = false;
     public boolean AllianceIsRed = true;
     public CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
-
-    //TODO delete this
-    public boolean resetFlag = false;
 
     public boolean inRest = false;
 

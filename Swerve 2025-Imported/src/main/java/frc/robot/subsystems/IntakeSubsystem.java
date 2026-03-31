@@ -20,14 +20,14 @@ public class IntakeSubsystem extends SubsystemBase
 
     public void setIntakeSpeed(double set_speed)
     {
-        // in_motor.set(set_speed);
-        // out_motor.set(set_speed);
+        in_motor.set(set_speed);
+        out_motor.set(set_speed);
     }
 
     public void setDeploySpeed(double set_speed)
     {
-        right_motor.set(set_speed);
-        left_motor.set(-set_speed);
+        // right_motor.set(set_speed);
+        // left_motor.set(-set_speed);
     }
 
     public double getEncoder()

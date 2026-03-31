@@ -1,8 +1,9 @@
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
@@ -21,6 +22,8 @@ public class DrivetrainCommand extends Command
     private CommandXboxController m_controller;
     private boolean usingJoystick;
 
+    private BooleanSupplier m_inputAim;
+
     
     private static double[] BYBLUEDEPOT   = {3.542, 20.812, 180};
     private static double[] BLUEDEPOT     = {1.292, 20.812, 180};
@@ -38,10 +41,11 @@ public class DrivetrainCommand extends Command
     private PIDFController m_Ypid = new PIDFController(0.1,0,0,0);
     private PIDFController m_Rpid = new PIDFController(0.1,0,0,0);
 
-    public DrivetrainCommand(DrivetrainSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick)
+    public DrivetrainCommand(DrivetrainSubsystem subsystem, DataMgmtSubsystem data_subsystem, Joystick joystick, CommandXboxController apac)
     {
         ms_this = subsystem;
         ms_data = data_subsystem;
+        m_inputAim = apac.leftBumper();
         m_joystick = joystick;
         usingJoystick = true;
         addRequirements(subsystem);
@@ -138,21 +142,13 @@ public class DrivetrainCommand extends Command
         double vectorI   = (ms_data.aim.flightTime * velocityX);
         double vectorJ   = (ms_data.aim.flightTime * velocityY);
 
-        // SmartDashboard.putNumber("vectorI", vectorI);
-        // SmartDashboard.putNumber("vectorJ", vectorJ);
+        
+        double distanceX = (ms_data.aim.turretX - ms_data.aim.target[0]);
+        double distanceY = (ms_data.aim.turretY - ms_data.aim.target[1]);
 
         ms_data.aim.target[0] = shotTarget[0] - vectorI;
         ms_data.aim.target[1] = shotTarget[1] - vectorJ;
         ms_data.aim.target[2] = shotTarget[2];
-        
-        // SmartDashboard.putNumber("targetX", ms_data.aim.target[0]);
-        // SmartDashboard.putNumber("targetY", ms_data.aim.target[1]);
-        // SmartDashboard.putNumber("targetZ", ms_data.aim.target[2]);
-
-        double distanceX = (ms_data.aim.turretX - ms_data.aim.target[0]);
-        double distanceY = (ms_data.aim.turretY - ms_data.aim.target[1]);
-
-
 
         switch (ms_data.Mode)
         {
@@ -164,29 +160,34 @@ public class DrivetrainCommand extends Command
 
                     int pov = m_joystick.getPOV();
                     double setR = 0;
+                    double targetAngle = 999.99;
 
-                    if      (pov == -1) setR = -m_joystick.getZ();
-                    else if (pov == 0)
+                    if (m_inputAim.getAsBoolean())
                     {
-                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 0); 
-                        setR = m_Rpid.CalcPID(systemTime);
-                    }
-                    else if (pov == 90)
-                    {
-                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, -90); 
-                        setR = m_Rpid.CalcPID(systemTime);
-                    }
-                    else if (pov == 180)
-                    {
-                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 180); 
-                        setR = m_Rpid.CalcPID(systemTime);
-                    }
-                    else if (pov == 270)
-                    {
-                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, 90); 
-                        setR = m_Rpid.CalcPID(systemTime);
-                    }
 
+                        double targetX = ms_data.aim.target[0];
+                        double targetY = ms_data.aim.target[1];
+
+                        double differenceX = ms_data.aim.turretX - targetX;
+                        double differenceY = ms_data.aim.turretY - targetY;
+                        
+                        targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
+
+                        if      ((differenceX < 0) && (differenceY > 0)) targetAngle = targetAngle - 180;
+                        else if ((differenceX < 0) && (differenceY < 0)) targetAngle = targetAngle + 180;
+
+                    }
+                    else if (pov == 0)   targetAngle =   0;
+                    else if (pov == 90)  targetAngle = -90;
+                    else if (pov == 180) targetAngle = 180;
+                    else if (pov == 270) targetAngle =  90;
+
+                    if (targetAngle == 999.99) setR = -m_joystick.getZ() * 0.9;
+                    else
+                    {
+                        m_Rpid.m_Error = ms_data.errorHelper(drivetrainR, targetAngle); 
+                        setR = m_Rpid.CalcPID(systemTime);
+                    }
 
                     driverX = -m_joystick.getY() * 0.9;
                     driverY = -m_joystick.getX() * 0.9;
