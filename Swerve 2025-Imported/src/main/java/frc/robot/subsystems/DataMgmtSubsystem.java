@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.eAim;
 import frc.robot.Constants.eInitPose;
 import frc.robot.Constants.eMode;
@@ -74,6 +75,7 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         private Matrix<N3, N1> multiTagConfidence = VecBuilder.fill(0.25, 0.25, 0.5);
         private Matrix<N3, N1> singleTagConfidence = VecBuilder.fill(2,   2,    4);
+        private Matrix<N3, N1> limelightConfidence = VecBuilder.fill(2,   2,    4);
 
         //init positions & rotations
         final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(0));
@@ -107,6 +109,8 @@ public class DataMgmtSubsystem extends SubsystemBase
         private SimCameraProperties baploProp   = new SimCameraProperties();
         private PhotonCameraSim sim_baplo       = new PhotonCameraSim(baplo, baploProp);
         public PhotonPoseEstimator baplo_estimator   = new PhotonPoseEstimator(field_2026, baplo_transform);
+
+        private String LimelightName = "";
 
 
         //variables for setting up simulated drivetrain
@@ -156,7 +160,7 @@ public class DataMgmtSubsystem extends SubsystemBase
                         estimate   = pablo_estimator.estimateLowestAmbiguityPose(result);
                         confidence = singleTagConfidence;
                     }
-                    addMeasurement(estimate, confidence);
+                    addPhotonMeasurement(estimate, confidence);
                 }
             }
         }
@@ -189,9 +193,21 @@ public class DataMgmtSubsystem extends SubsystemBase
                         estimate   = baplo_estimator.estimateLowestAmbiguityPose(result);
                         confidence = singleTagConfidence;
                     }
-                    addMeasurement(estimate, confidence);
+                    addPhotonMeasurement(estimate, confidence);
                 }
             }
+        }
+
+        public void updateEstimateLimelight()
+        {
+            double yaw = getYaw();
+
+            LimelightHelpers.SetRobotOrientation(LimelightName, yaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+            LimelightHelpers.PoseEstimate estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimelightName);
+
+            addLimelightMeasurement(estimate, limelightConfidence);
+
         }
 
         /**
@@ -218,10 +234,17 @@ public class DataMgmtSubsystem extends SubsystemBase
             m_drivetrain = input;
         }
 
-        public void addMeasurement(Optional<EstimatedRobotPose> estimate, Matrix<N3, N1> confidence)
+        public void addPhotonMeasurement(Optional<EstimatedRobotPose> estimate, Matrix<N3, N1> confidence)
         {
             poseEstimator.addVisionMeasurement(estimate.get().estimatedPose.toPose2d(), 
                                                estimate.get().timestampSeconds, 
+                                               confidence);
+        }
+
+        public void addLimelightMeasurement(LimelightHelpers.PoseEstimate estimate, Matrix<N3, N1> confidence)
+        {
+            poseEstimator.addVisionMeasurement(estimate.pose, 
+                                               estimate.timestampSeconds, 
                                                confidence);
         }
 
@@ -230,6 +253,7 @@ public class DataMgmtSubsystem extends SubsystemBase
 
             updateEstimateBaplo();
             updateEstimatePablo();
+            updateEstimateLimelight();
 
             positions[0] = m_drivetrain.getModule(0).getCachedPosition();
             positions[1] = m_drivetrain.getModule(1).getCachedPosition();

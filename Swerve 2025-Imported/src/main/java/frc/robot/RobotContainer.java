@@ -103,7 +103,9 @@ public class RobotContainer {
 
 
     // private final CommandXboxController controller  = new CommandXboxController(0);
-    private final CommandXboxController apac        = new CommandXboxController(1);
+    private final CommandXboxController apac1 = new CommandXboxController(1);
+    private final CommandXboxController apac2 = new CommandXboxController(2);
+
     private final Joystick              joystick    = new Joystick(5);
 
 
@@ -115,9 +117,9 @@ public class RobotContainer {
         Trigger callIntake   = new Trigger(ms_data::intake);
         Trigger callCarousel = new Trigger(ms_data::carousel);
 
-        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick, apac));
+        ms_drivetrain.setDefaultCommand(new DrivetrainCommand(ms_drivetrain, ms_data, joystick, apac1));
         ms_shooter.setDefaultCommand(new ShooterCommand(ms_shooter, ms_data, joystick));
-        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, apac, joystick));
+        ms_data.setDefaultCommand(new DataMgmtCommand(ms_data, apac1, joystick));
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
@@ -129,13 +131,13 @@ public class RobotContainer {
         );
 
         // controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        apac.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        apac1.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
-        // callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
+        //  callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
         callCarousel.whileTrue(new CarouselCommand(ms_carousel));
 
-        apac.x().whileTrue(new IntakeCommand(ms_intake, ms_data, 0.9));
-        apac.y().whileTrue(new IntakeCommand(ms_intake, ms_data, -0.9));
+        apac2.a().whileTrue(new IntakeCommand(ms_intake, ms_data, 0.9));
+        apac2.b().whileTrue(new IntakeCommand(ms_intake, ms_data, -0.9));
 
 
         // Run SysId routines when holding back/start and X/Y.

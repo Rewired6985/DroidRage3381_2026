@@ -158,6 +158,8 @@ public class DrivetrainCommand extends Command
                 if (usingJoystick) 
                 {
 
+                    ms_data.inputs.resetGyro = m_joystick.getRawButton(4);
+
                     int pov = m_joystick.getPOV();
                     double setR = 0;
                     double targetAngle = 999.99;
@@ -170,7 +172,7 @@ public class DrivetrainCommand extends Command
 
                         double differenceX = ms_data.aim.turretX - targetX;
                         double differenceY = ms_data.aim.turretY - targetY;
-                        
+
                         targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
 
                         if      ((differenceX < 0) && (differenceY > 0)) targetAngle = targetAngle - 180;

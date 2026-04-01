@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -52,7 +51,7 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    //if (m_joystick.getRawButton(3)) 
+                    
                     ms_this.inputs.intake = m_joystick.getRawButton(3);
                 }
                 else
@@ -72,7 +71,6 @@ public class DataMgmtCommand extends Command
                     counter++;
                     ms_this.inputs.resetGyro = true;
                 }
-                ms_this.aim.tracking = (Timer.getMatchTime() < 10);
                 break;
             }
         }
