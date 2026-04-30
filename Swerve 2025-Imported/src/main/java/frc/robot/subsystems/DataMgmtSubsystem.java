@@ -52,6 +52,8 @@ public class DataMgmtSubsystem extends SubsystemBase
     public boolean AllianceIsRed = true;
     public CommandSwerveDrivetrain m_drivetrain = TunerConstants.createDrivetrain();
 
+    public int carouselSpeed = 60;
+
     public boolean inRest = false;
 
     @Override
@@ -68,6 +70,7 @@ public class DataMgmtSubsystem extends SubsystemBase
         private Pose2d initOffset;
         private Pose2d estimatedPose;
 
+        public Constants.eInitPose initPose = Constants.eInitPose.MIDDLE;
         
         private double m_lastSimTime = Utils.getCurrentTimeSeconds();
 
@@ -76,17 +79,23 @@ public class DataMgmtSubsystem extends SubsystemBase
         private Matrix<N3, N1> multiTagConfidence = VecBuilder.fill(0.25, 0.25, 0.5);
         private Matrix<N3, N1> singleTagConfidence = VecBuilder.fill(2,   2,    4);
         private Matrix<N3, N1> limelightConfidence = VecBuilder.fill(2,   2,    4);
+        private Matrix<N3, N1> ignoreConfidence    = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
 
         //init positions & rotations
-        final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(0));
-        final Rotation2d redInitRotation  = new Rotation2d(Math.toRadians(180));
+        final Rotation2d blueInitRotation = new Rotation2d(Math.toRadians(180));
+        final Rotation2d redInitRotation  = new Rotation2d(Math.toRadians(0));
 
-        final Pose2d leftBluePosition    = new Pose2d(3.5,5,redInitRotation);
-        final Pose2d middleBluePosition  = new Pose2d(3.5,4,redInitRotation);  
-        final Pose2d rightBluePosition   = new Pose2d(3.5,3,redInitRotation);
-        final Pose2d leftRedPosition     = new Pose2d(13,3,blueInitRotation);
-        final Pose2d middleRedPosition   = new Pose2d(13,4,blueInitRotation);
-        final Pose2d rightRedPosition    = new Pose2d(13,5,blueInitRotation);
+        final Pose2d farLeftBluePosition  = new Pose2d(3.5,7.460,blueInitRotation);
+        final Pose2d leftBluePosition     = new Pose2d(3.5,5.000,blueInitRotation);
+        final Pose2d middleBluePosition   = new Pose2d(3.5,4.000,blueInitRotation);  
+        final Pose2d rightBluePosition    = new Pose2d(3.5,3.000,blueInitRotation);
+        final Pose2d farRightBluePosition = new Pose2d(3.5,0.6096,blueInitRotation);
+
+        final Pose2d farLeftRedPosition  = new Pose2d(13,0.6096,redInitRotation);
+        final Pose2d leftRedPosition     = new Pose2d(13,3.000,redInitRotation);
+        final Pose2d middleRedPosition   = new Pose2d(13,4.000,redInitRotation);
+        final Pose2d rightRedPosition    = new Pose2d(13,5.000,redInitRotation);
+        final Pose2d farRightRedPosition = new Pose2d(13,7.460,redInitRotation);
 
         //right
         //pablo configs                          (X,Y,Z,R,P,Y)
@@ -131,6 +140,8 @@ public class DataMgmtSubsystem extends SubsystemBase
             positions,
             new Pose2d(4.5,4,pigeon.getRotation2d())
         );
+
+        public int getYaw;
 
         private void updateEstimatePablo()
         {
@@ -200,13 +211,21 @@ public class DataMgmtSubsystem extends SubsystemBase
 
         public void updateEstimateLimelight()
         {
-            double yaw = getYaw();
+            double yaw = rolloverHelper(getYaw() + 180);
 
             LimelightHelpers.SetRobotOrientation(LimelightName, yaw, 0.0, 0.0, 0.0, 0.0, 0.0);
 
             LimelightHelpers.PoseEstimate estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimelightName);
 
-            addLimelightMeasurement(estimate, limelightConfidence);
+            Pose2d pose = estimate.pose;
+            
+            Matrix<N3, N1> confidence;
+
+            if (pose.getX() < 1 && pose.getY() < 1) confidence = ignoreConfidence;
+            else                                    confidence = limelightConfidence;
+
+            
+            addLimelightMeasurement(estimate, confidence);
 
         }
 
@@ -310,6 +329,8 @@ public class DataMgmtSubsystem extends SubsystemBase
             boolean AllianceIsRed = true;
             Pose2d pose = new Pose2d();
 
+            initPose = position;
+
             if (ally.isPresent())
             {
                 if (ally.get() == Alliance.Blue) AllianceIsRed = false;  
@@ -317,6 +338,12 @@ public class DataMgmtSubsystem extends SubsystemBase
 
             switch (position)
             {
+                case FARLEFT:
+                {
+                    if (AllianceIsRed) pose = farLeftRedPosition;
+                    else               pose = farLeftBluePosition;
+                    break;
+                }
                 case LEFT:
                 {
                     if (AllianceIsRed) pose = leftRedPosition;
@@ -333,6 +360,12 @@ public class DataMgmtSubsystem extends SubsystemBase
                 {
                     if (AllianceIsRed) pose = rightRedPosition;
                     else               pose = rightBluePosition;
+                    break;
+                }
+                case FARRIGHT:
+                {
+                    if (AllianceIsRed) pose = farRightRedPosition;
+                    else               pose = farRightBluePosition;
                     break;
                 }
             }
@@ -387,11 +420,13 @@ public class DataMgmtSubsystem extends SubsystemBase
         public boolean resetGyro = false;
         public boolean intake = false;
         public boolean carousel = false;
+        public boolean reverseIntake = false;
     }
 
     public aimStruct      aim      = new aimStruct();
     public inputStruct    inputs   = new inputStruct();
     public positionStruct position = new positionStruct();
+    public int getYaw;
 
     
     public DataMgmtSubsystem()

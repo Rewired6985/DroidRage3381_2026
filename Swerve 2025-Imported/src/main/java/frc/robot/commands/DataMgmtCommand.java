@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,6 +15,9 @@ public class DataMgmtCommand extends Command
     private Joystick m_joystick;
     private CommandXboxController m_controller;
     private boolean usingJoystick;
+
+    private BooleanSupplier reverseIntake;
+    private BooleanSupplier reverseCarousel;
 
     private int counter = 0;
 
@@ -28,6 +33,8 @@ public class DataMgmtCommand extends Command
     {
         ms_this = subsystem;
         m_joystick = joystick;
+        reverseIntake = apac.leftBumper();
+        reverseCarousel = apac.y();
         usingJoystick = true;
         addRequirements(subsystem);
     }
@@ -51,8 +58,10 @@ public class DataMgmtCommand extends Command
             {
                 if (usingJoystick)
                 {
-                    
-                    ms_this.inputs.intake = m_joystick.getRawButton(3);
+                    if (m_joystick.getRawButton(3)) ms_this.inputs.intake = true;
+                    ms_this.inputs.reverseIntake = reverseIntake.getAsBoolean();
+
+                    ms_this.inputs.resetGyro = m_joystick.getRawButton(4);
                 }
                 else
                 {
@@ -61,16 +70,21 @@ public class DataMgmtCommand extends Command
 
                 }
 
+                if (reverseCarousel.getAsBoolean()) ms_this.carouselSpeed = -30;
+                else                                ms_this.carouselSpeed =  60;
+
                 break;
             }
             case AUTO:
             {
                 // ms_this.inputs.intake = true;
+                
                 if (counter == 0)
                 {
                     counter++;
                     ms_this.inputs.resetGyro = true;
                 }
+                else ms_this.inputs.resetGyro = false;
                 break;
             }
         }

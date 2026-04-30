@@ -4,21 +4,33 @@
 
 package frc.robot;
 
+import java.io.DataOutputStream;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.DataMgmtCommand;
+import frc.robot.commands.DrivetrainCommand;
+import frc.robot.generated.TunerConstants;
+
 
 public class Robot extends TimedRobot {
 
 	private Command m_autonomousCommand;
 
 	private final RobotContainer m_robotContainer;
+	
+	
 	private boolean inSim = false;
 
 
 	public Robot() 
 	{
 		m_robotContainer = new RobotContainer();
+		
+		
    		// CameraServer.startAutomaticCapture();
 	}
 
@@ -33,14 +45,19 @@ public class Robot extends TimedRobot {
 
 
 	public void disabledInit() 
-	{
+	{ 
 
+ 
+  
+   
 	}
 
 	@Override
 	public void disabledPeriodic() 
-	{
-		m_robotContainer.updateChooserValues();
+	{  
+	
+		  
+		
 	}
 
 	@Override

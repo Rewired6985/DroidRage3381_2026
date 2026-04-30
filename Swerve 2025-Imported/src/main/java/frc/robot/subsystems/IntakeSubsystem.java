@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -15,7 +16,11 @@ public class IntakeSubsystem extends SubsystemBase
     private TalonFX out_motor   = new TalonFX(10);
     private TalonFX left_motor  = new TalonFX(15);
     private TalonFX right_motor = new TalonFX(16);
+   
     public boolean inDeployMode = false;
+
+    public double[] storedIntake = {0,0};
+    public double storedPivot = 0;
 
     private double offset = 0;
 
@@ -65,10 +70,11 @@ public class IntakeSubsystem extends SubsystemBase
     }
 
 
-    public void setIntakeSpeed(double set_speed)
+    public void setIntakeSpeed(double[] set_speed)
     {
-        in_motor .set(set_speed);
-        out_motor.set(set_speed);
+         in_motor .set(-set_speed[1]);
+         out_motor.set(-set_speed[0]);
+         
     }
 
     public void setDeploySpeed(double set_speed)
@@ -81,6 +87,11 @@ public class IntakeSubsystem extends SubsystemBase
     {
         double value = right_motor.getRotorPosition().getValueAsDouble() - offset;
         return value;
+    }
+
+    public void updateOffset()
+    {
+        offset = getEncoder();
     }
 
     

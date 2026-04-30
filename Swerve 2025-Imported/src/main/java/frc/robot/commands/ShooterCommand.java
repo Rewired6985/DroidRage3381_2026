@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -17,10 +17,11 @@ public class ShooterCommand extends Command
     private final ShooterSubsystem ms_this;
     private Joystick m_joystick;
     private CommandXboxController m_controller;
-    private boolean usingJoystick;
+    private boolean m_usingJoystick;
 
     private double m_targetVelocity = 0;
     private double m_turretTarget = 0;
+   
 
     private PIDFController m_turretPID = new PIDFController(0.02,0,0,0);
 
@@ -29,7 +30,7 @@ public class ShooterCommand extends Command
         ms_this  = subsystem;
         ms_data = data_subsystem;
         m_joystick = joystick;
-        usingJoystick = true;
+        m_usingJoystick = true;
         addRequirements(subsystem);
     }
 
@@ -39,7 +40,7 @@ public class ShooterCommand extends Command
         ms_this  = subsystem;
         ms_data = data_subsystem;
         m_controller = controller;
-        usingJoystick = false;
+        m_usingJoystick = false;
         addRequirements(subsystem);
     }
 
@@ -53,42 +54,40 @@ public class ShooterCommand extends Command
     public void execute()
     {
         
-        double m_turretSpeed = 0;
-
-        double timestamp = Timer.getFPGATimestamp();
+        // double m_turretSpeed = 0;
+        // double timestamp = Timer.getFPGATimestamp();
 
         double turretPosition = ms_data.rolloverHelper(ms_this.getTurretPosition());
         
         double yaw = ms_data.position.getYaw();
-
-        double m_targetX = ms_data.aim.target[0];
-        double m_targetY = ms_data.aim.target[1];
-
-        double differenceX = ms_data.aim.turretX - m_targetX;
-        double differenceY = ms_data.aim.turretY - m_targetY;
-        double m_targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
-
-        if      ((differenceX < 0) && (differenceY > 0)) m_targetAngle = m_targetAngle - 180;
-        else if ((differenceX < 0) && (differenceY < 0)) m_targetAngle = m_targetAngle + 180;
-
-        double distance = Math.sqrt(differenceX * differenceX + differenceY * differenceY);
-
-        m_targetAngle *= -1;
+       if ( ms_data.getYaw<90&&ms_data.getYaw>92) {
         
-        SmartDashboard.putNumber("target angle", m_targetAngle);
+       } 
+        double targetX = ms_data.aim.target[0];
+        double targetY = ms_data.aim.target[1];
 
-        m_turretTarget = ms_data.rolloverHelper(yaw + m_targetAngle);
+        double differenceX = ms_data.aim.turretX - targetX;
+        double differenceY = ms_data.aim.turretY - targetY;
+        double targetAngle = ms_data.rolloverHelper((Math.atan(differenceY/differenceX) * Constants.DEGREES_PER_RADIANS));
+
+        if      ((differenceX < 0) && (differenceY > 0)) targetAngle = targetAngle - 180;
+        else if ((differenceX < 0) && (differenceY < 0)) targetAngle = targetAngle + 180;
+
+        targetAngle *= -1;
+        
+        SmartDashboard.putNumber("target angle", targetAngle);
+
+        m_turretTarget = ms_data.rolloverHelper(yaw + targetAngle);
 
         SmartDashboard.putNumber("turret target", m_turretTarget);
         SmartDashboard.putNumber("yaw", yaw);
-        
+       
 
         // ms_data.aim.fuelVelocity = ((ms_data.aim.distance)/
         //                     (Math.cos(ms_data.aim.angle) * 
         //                    Math.sqrt((2*(Constants.SHOOTERHEIGHT - ms_data.aim.target[2] + 
         //                                 (ms_data.aim.distance * Math.tan(ms_data.aim.angle))))/
         //                              (Constants.GRAVITY))));
-
         // SmartDashboard.putNumber("fuel velocity", ms_data.aim.fuelVelocity);
 
 
@@ -98,7 +97,7 @@ public class ShooterCommand extends Command
         {
             case TELEOP:
             {
-                if (usingJoystick)
+                if (m_usingJoystick)
                 {
                     ms_data.aim.shoot = m_joystick.getRawButton(1);
                     ms_data.aim.stop  = m_joystick.getRawButton(2);
@@ -112,7 +111,7 @@ public class ShooterCommand extends Command
             }
             case AUTO:
             {
-                ms_data.aim.shoot = true;
+                if (ms_data.aim.tracking) ms_data.aim.shoot = true;
                 break;
             }
         }
@@ -152,7 +151,7 @@ public class ShooterCommand extends Command
         
         ms_data.aim.tracking = (Math.abs(m_targetVelocity - currentVelocity) < 50) /*&&  (Math.abs(m_turretPID.m_Error) < 5)*/;
 
-        m_turretSpeed = m_turretPID.CalcPID(timestamp);
+        // m_turretSpeed = m_turretPID.CalcPID(timestamp);
 
 
         SmartDashboard.putNumber("shooter current", currentVelocity);
@@ -174,5 +173,5 @@ public class ShooterCommand extends Command
     {
         return false;
     }
-
+   
 }

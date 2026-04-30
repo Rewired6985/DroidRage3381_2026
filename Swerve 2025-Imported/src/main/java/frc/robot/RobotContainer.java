@@ -40,12 +40,15 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.eIntakeMode;
 import frc.robot.commands.CarouselCommand;
 import frc.robot.commands.DataMgmtCommand;
 import frc.robot.commands.DrivetrainCommand;
@@ -58,6 +61,7 @@ import frc.robot.subsystems.DataMgmtSubsystem;
 import frc.robot.subsystems.DataMgmtSubsystem.positionStruct;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+
 import frc.robot.subsystems.ShooterSubsystem;
 
 @SuppressWarnings("unused")
@@ -70,11 +74,14 @@ public class RobotContainer {
     private IntakeSubsystem ms_intake          = new IntakeSubsystem();
     private CarouselSubsystem ms_carousel      = new CarouselSubsystem();
     private ShooterSubsystem ms_shooter        = new ShooterSubsystem();
+    
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
         
     public AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
+    Spark ledDriver = new Spark(1);
+    Spark ledDriver2 = new Spark(0);
 
     // private DoubleLogEntry XLog;
     // private DoubleLogEntry YLog;
@@ -94,7 +101,6 @@ public class RobotContainer {
     SendableChooser<Command> m_chooser        = new SendableChooser<>();
     SendableChooser<Constants.eInitPose> m_poseChooser    = new SendableChooser<>();
     SendableChooser<Constants.eAutoGoal> m_goalChooser    = new SendableChooser<>();
-    SendableChooser<Integer>             m_hoodChooser    = new SendableChooser<>();
 
     public boolean returnFalse()
     {
@@ -107,6 +113,8 @@ public class RobotContainer {
     private final CommandXboxController apac2 = new CommandXboxController(2);
 
     private final Joystick              joystick    = new Joystick(5);
+   
+
 
 
 
@@ -131,13 +139,17 @@ public class RobotContainer {
         );
 
         // controller.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        apac1.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        //apac1.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
-        //  callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data));
-        callCarousel.whileTrue(new CarouselCommand(ms_carousel));
+        callIntake.whileTrue(new IntakeCommand(ms_intake, ms_data, eIntakeMode.AUTOMATIC));
+        callCarousel.whileTrue(new CarouselCommand(ms_carousel, ms_data));
 
-        apac2.a().whileTrue(new IntakeCommand(ms_intake, ms_data, 0.9));
-        apac2.b().whileTrue(new IntakeCommand(ms_intake, ms_data, -0.9));
+        apac1.b().whileTrue(new IntakeCommand(ms_intake, ms_data, eIntakeMode.OUTTAKE));
+        apac1.x().whileTrue(new IntakeCommand(ms_intake, ms_data, eIntakeMode.INTAKE));
+
+        apac2.a().whileTrue(new IntakeCommand(ms_intake, ms_data, eIntakeMode.DEPLOY));
+        apac2.b().whileTrue(new IntakeCommand(ms_intake, ms_data, eIntakeMode.RETRACT));
+        
 
 
         // Run SysId routines when holding back/start and X/Y.
@@ -169,15 +181,20 @@ public class RobotContainer {
         final int choose_right  = 3;
 
         configureBindings();
-        
+         ledDriver.set(-.15);
+          ledDriver2.set(-.15);
+        double yaw = ms_data.position.getYaw();
+      
         ms_data.setAlliance();
         ms_data.position.setupVisionSim();
 
 
         m_poseChooser.setDefaultOption("middle",Constants.eInitPose.MIDDLE);
+        m_poseChooser.addOption("far left"     ,Constants.eInitPose.FARLEFT);
         m_poseChooser.addOption("left"         ,Constants.eInitPose.LEFT);
         m_poseChooser.addOption("middle"       ,Constants.eInitPose.MIDDLE);
         m_poseChooser.addOption("right"        ,Constants.eInitPose.RIGHT);
+        m_poseChooser.addOption("far right"    ,Constants.eInitPose.FARRIGHT);
         SmartDashboard.putData("position",     m_poseChooser);
 
         m_goalChooser.setDefaultOption("no move"   ,Constants.eAutoGoal.NOMOVE);
@@ -186,12 +203,8 @@ public class RobotContainer {
         m_goalChooser.addOption("outpost only"     ,Constants.eAutoGoal.OUTPOST);
         m_goalChooser.addOption("depot, outpost"   ,Constants.eAutoGoal.DEPOT_THEN_OUTPOST);
         m_goalChooser.addOption("outpost, depot"   ,Constants.eAutoGoal.OUTPOST_THEN_DEPOT);
-        SmartDashboard.putData("goal"            ,m_goalChooser);
-
-        m_hoodChooser.setDefaultOption("normal", 75);
-        m_hoodChooser.addOption("normal", 75);
-        m_hoodChooser.addOption("passing", 65);
-
+        m_goalChooser.addOption("neutral zone"     ,Constants.eAutoGoal.NEUTRALZONE);
+        SmartDashboard.putData("goal"               ,m_goalChooser);
     }
 
     public void updateChooserValues()
@@ -199,8 +212,9 @@ public class RobotContainer {
         Constants.eInitPose initPose = m_poseChooser.getSelected();
         ms_data.position.updateInitPosition(initPose);
         ms_drivetrain.initPose = initPose;
+        
+      
 
-        ms_data.aim.updateAngle(m_hoodChooser.getSelected());
         ms_drivetrain.updateParams(m_goalChooser.getSelected());
         SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
     }
@@ -217,6 +231,7 @@ public class RobotContainer {
 
     public void setDriveMode(Constants.eMode mode)
     {
+        
         ms_data.Mode = mode;
     }
 
@@ -235,5 +250,30 @@ public class RobotContainer {
         ms_data.position.updateVisionSim();
         ms_data.position.runPositionSim();
     }
-    
+ 
+     public void disabledPeriodic() {
+      
+          
+         double yaw = ms_data.position.getYaw();
+      if ( ms_data.getYaw<-170&&ms_data.getYaw>-189) {
+        ledDriver.set(-.91);
+          ledDriver2.set(-.91);
+       } else{
+         ledDriver.set(.63);
+          ledDriver2.set(.63);
+       }
+        SmartDashboard.putNumber("yaw", yaw);
+      // if (ms_data.AllianceIsRed) {
+        //ledDriver.set(-.85);
+        //ledDriver2.set(-.85);
+        
+       //}else {
+        //ledDriver.set(-.95);
+        //ledDriver2.set(-.95);
+       //}
+       
+
+    }
+
+   
 }

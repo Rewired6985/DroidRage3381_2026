@@ -15,6 +15,9 @@ public class Constants
 
     public static double DEGREES_PER_RADIANS = 57.295779513;
 
+    // public static double TURRETX = -6;
+    // public static double TURRETY =  8;
+    
     public static double TURRETX = 0;
     public static double TURRETY = 0;
 
@@ -60,7 +63,12 @@ public class Constants
         COLLECTDEPOT,
         TOOUTPOST,
         COLLECTOUTPOST,
-        TOCENTER
+        TOCENTER,
+        UNDERTRENCH,
+        TONEUTRAL,
+        COLLECTPILE,
+        RETURN,
+        TOSCORE
     }
 
 
@@ -69,9 +77,11 @@ public class Constants
      */
     public static enum eInitPose
     {
+        FARLEFT,
         LEFT,
         MIDDLE,
-        RIGHT
+        RIGHT,
+        FARRIGHT
     }
 
     /**
@@ -82,8 +92,21 @@ public class Constants
         NOMOVE,
         DEPOT,
         OUTPOST,
+        NEUTRALZONE,
         DEPOT_THEN_OUTPOST,
-        OUTPOST_THEN_DEPOT,
+        OUTPOST_THEN_DEPOT
+    }
+
+    /**
+     * 
+     */
+    public static enum eIntakeMode
+    {
+        AUTOMATIC,
+        INTAKE,
+        OUTTAKE,
+        RETRACT,
+        DEPLOY
     }
 
     /*   JOYSTICK INPUTS 

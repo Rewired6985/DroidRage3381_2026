@@ -56,6 +56,10 @@ public class DrivetrainSubsystem extends SubsystemBase
                             else                             state = eAuto.TOCENTER;
                             break;
                         }
+                        case NEUTRALZONE:
+                        {
+                            state = eAuto.UNDERTRENCH;
+                        }
                         case NOMOVE: break;
                     }
                 }
@@ -102,7 +106,7 @@ public class DrivetrainSubsystem extends SubsystemBase
                 if (depotCollected)
                 {
                     if (goal == eAutoGoal.DEPOT_THEN_OUTPOST) state = eAuto.TOCENTER;
-                    else                                      state = eAuto.REST;
+                    else                                      state = eAuto.TOSCORE;
                 }
                 break;
             }
@@ -111,8 +115,37 @@ public class DrivetrainSubsystem extends SubsystemBase
                 if (outpostCollected)
                 {
                     if (goal == eAutoGoal.OUTPOST_THEN_DEPOT) state = eAuto.TOCENTER;
-                    else                                      state = eAuto.REST;
+                    else                                      state = eAuto.TOSCORE;
                 }
+                break;
+            }
+            case UNDERTRENCH:
+            {
+                if (inPosition) state = eAuto.TONEUTRAL;
+                break;
+            }
+            case TONEUTRAL:
+            {
+                if (inPosition) 
+                {
+                    if (goalAccomplished) state = eAuto.RETURN;
+                    else                  state = eAuto.COLLECTPILE;
+                }
+                break;
+            }
+            case COLLECTPILE:
+            {
+                if (inPosition) state = eAuto.TONEUTRAL;
+                break;
+            }
+            case RETURN:
+            {
+                if (inPosition) state = eAuto.TOSCORE;
+                break;
+            }
+            case TOSCORE:
+            {
+                if (inPosition) state = eAuto.REST;
                 break;
             }
         }
