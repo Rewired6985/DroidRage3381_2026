@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -60,9 +59,6 @@ public class ShooterCommand extends Command
         double turretPosition = ms_data.rolloverHelper(ms_this.getTurretPosition());
         
         double yaw = ms_data.position.getYaw();
-       if ( ms_data.getYaw<90&&ms_data.getYaw>92) {
-        
-       } 
         double targetX = ms_data.aim.target[0];
         double targetY = ms_data.aim.target[1];
 

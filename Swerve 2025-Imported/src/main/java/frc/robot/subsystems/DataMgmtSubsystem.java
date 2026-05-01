@@ -141,8 +141,6 @@ public class DataMgmtSubsystem extends SubsystemBase
             new Pose2d(4.5,4,pigeon.getRotation2d())
         );
 
-        public int getYaw;
-
         private void updateEstimatePablo()
         {
 
@@ -426,7 +424,6 @@ public class DataMgmtSubsystem extends SubsystemBase
     public aimStruct      aim      = new aimStruct();
     public inputStruct    inputs   = new inputStruct();
     public positionStruct position = new positionStruct();
-    public int getYaw;
 
     
     public DataMgmtSubsystem()

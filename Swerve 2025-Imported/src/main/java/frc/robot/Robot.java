@@ -4,16 +4,11 @@
 
 package frc.robot;
 
-import java.io.DataOutputStream;
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.DataMgmtCommand;
-import frc.robot.commands.DrivetrainCommand;
-import frc.robot.generated.TunerConstants;
 
 
 public class Robot extends TimedRobot {
@@ -41,23 +36,19 @@ public class Robot extends TimedRobot {
 	public void robotPeriodic() 
 	{
 		CommandScheduler.getInstance().run();
+		SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
 	}
 
 
 	public void disabledInit() 
 	{ 
 
- 
-  
-   
 	}
 
 	@Override
 	public void disabledPeriodic() 
 	{  
-	
-		  
-		
+		m_robotContainer.updateChooserValues();
 	}
 
 	@Override

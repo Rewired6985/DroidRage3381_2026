@@ -80,7 +80,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
         
     public AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
-    Spark ledDriver = new Spark(1);
+    Spark ledDriver  = new Spark(1);
     Spark ledDriver2 = new Spark(0);
 
     // private DoubleLogEntry XLog;
@@ -196,6 +196,7 @@ public class RobotContainer {
         m_poseChooser.addOption("right"        ,Constants.eInitPose.RIGHT);
         m_poseChooser.addOption("far right"    ,Constants.eInitPose.FARRIGHT);
         SmartDashboard.putData("position",     m_poseChooser);
+        
 
         m_goalChooser.setDefaultOption("no move"   ,Constants.eAutoGoal.NOMOVE);
         m_goalChooser.addOption("no move"          ,Constants.eAutoGoal.NOMOVE);
@@ -251,29 +252,30 @@ public class RobotContainer {
         ms_data.position.runPositionSim();
     }
  
-     public void disabledPeriodic() {
+    // public void disabledPeriodic() 
+    // {
       
           
-         double yaw = ms_data.position.getYaw();
-      if ( ms_data.getYaw<-170&&ms_data.getYaw>-189) {
-        ledDriver.set(-.91);
-          ledDriver2.set(-.91);
-       } else{
-         ledDriver.set(.63);
-          ledDriver2.set(.63);
-       }
-        SmartDashboard.putNumber("yaw", yaw);
-      // if (ms_data.AllianceIsRed) {
-        //ledDriver.set(-.85);
-        //ledDriver2.set(-.85);
+    // double yaw = ms_data.position.getYaw();
+    //   if ( ms_data.getYaw<-170&&ms_data.getYaw>-189) {
+    //     ledDriver.set(-.91);
+    //       ledDriver2.set(-.91);
+    //    } else{
+    //      ledDriver.set(.63);
+    //       ledDriver2.set(.63);
+    //    }
+    //     SmartDashboard.putNumber("yaw", yaw);
+    //   // if (ms_data.AllianceIsRed) {
+    //     //ledDriver.set(-.85);
+    //     //ledDriver2.set(-.85);
         
-       //}else {
-        //ledDriver.set(-.95);
-        //ledDriver2.set(-.95);
-       //}
+    //    //}else {
+    //     //ledDriver.set(-.95);
+    //     //ledDriver2.set(-.95);
+    //    //}
        
 
-    }
+    // }
 
    
 }

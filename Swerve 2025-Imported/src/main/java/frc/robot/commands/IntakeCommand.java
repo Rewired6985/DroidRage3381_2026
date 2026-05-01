@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.eIntakeMode;
 import frc.robot.PIDFController;
@@ -30,7 +29,6 @@ public class IntakeCommand extends Command
     private IntakeSubsystem ms_this;
     private DataMgmtSubsystem ms_data;
 
-    private double[] m_intakeSpeed = INTAKESPEED;
     private double   m_deploySpeed   = 0;
 
     private double[] m_manualSpeed  = {0,0};
