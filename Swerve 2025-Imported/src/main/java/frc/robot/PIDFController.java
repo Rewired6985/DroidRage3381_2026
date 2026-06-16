@@ -36,7 +36,7 @@ public class PIDFController
     private double m_PositionOffset;
 
     /**
-     * dev tool; used for troubleshooting 
+     * dev tool; used for troubleshooting
      */
     public double m_PIDresult;
     /**

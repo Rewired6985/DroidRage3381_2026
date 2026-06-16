@@ -36,6 +36,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -82,9 +83,6 @@ public class RobotContainer {
     public AprilTagFieldLayout field_2026  = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
     Spark ledDriver  = new Spark(1);
     Spark ledDriver2 = new Spark(0);
-
-    // private DoubleLogEntry XLog;
-    // private DoubleLogEntry YLog;
 
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -170,24 +168,17 @@ public class RobotContainer {
     public RobotContainer()
     {
 
-        DataLogManager.start();
-        DataLog log = DataLogManager.getLog();
-
-        // XLog = new DoubleLogEntry(log, "x");
-        // YLog = new DoubleLogEntry(log, "y");
-
         final int choose_left   = 1;
         final int choose_middle = 2;
         final int choose_right  = 3;
 
         configureBindings();
-         ledDriver.set(-.15);
-          ledDriver2.set(-.15);
+        ledDriver.set(-.15);
+        ledDriver2.set(-.15);
         double yaw = ms_data.position.getYaw();
       
         ms_data.setAlliance();
         ms_data.position.setupVisionSim();
-
 
         m_poseChooser.setDefaultOption("middle",Constants.eInitPose.MIDDLE);
         m_poseChooser.addOption("far left"     ,Constants.eInitPose.FARLEFT);
@@ -214,8 +205,6 @@ public class RobotContainer {
         ms_data.position.updateInitPosition(initPose);
         ms_drivetrain.initPose = initPose;
         
-      
-
         ms_drivetrain.updateParams(m_goalChooser.getSelected());
         SmartDashboard.putString("currentGoal", ms_drivetrain.goal.toString());
     }
@@ -225,9 +214,23 @@ public class RobotContainer {
         return m_chooser.getSelected();
     }
 
-    public void updateLogger()
+    private double storedX = Double.NaN;
+    private double storedY = Double.NaN;
+
+    public double[] getLogValues()
     {
-        // XLog.append(drivetrain.getState().Pose.getX());+
+        double X = ms_data.position.getEstX();
+        double Y = ms_data.position.getEstY();
+
+        double[] return_value = {Double.NaN, Double.NaN};
+
+        if (X < storedX - 0.02 && X > storedX + 0.02) return_value[0] = X;
+        if (Y < storedY - 0.02 && Y > storedY + 0.02) return_value[1] = Y;
+
+        storedX = X;
+        storedY = Y;
+
+        return return_value;
     }
 
     public void setDriveMode(Constants.eMode mode)
@@ -250,6 +253,7 @@ public class RobotContainer {
     {
         ms_data.position.updateVisionSim();
         ms_data.position.runPositionSim();
+        
     }
  
     // public void disabledPeriodic() 

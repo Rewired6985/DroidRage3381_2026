@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,7 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot 
+{
 
 	private Command m_autonomousCommand;
 
@@ -20,12 +24,20 @@ public class Robot extends TimedRobot {
 	
 	private boolean inSim = false;
 
+	private DoubleLogEntry XLog;
+    private DoubleLogEntry YLog;
+
 
 	public Robot() 
 	{
 		m_robotContainer = new RobotContainer();
 		
 		
+        DataLogManager.start();
+        DataLog log = DataLogManager.getLog();
+
+        XLog = new DoubleLogEntry(log, "x");
+        YLog = new DoubleLogEntry(log, "y");
    		// CameraServer.startAutomaticCapture();
 	}
 
@@ -91,8 +103,21 @@ public class Robot extends TimedRobot {
 		m_robotContainer.setSimState(inSim);
 	}
 
+	private double number = 0;
+
 	@Override
-	public void teleopPeriodic() {}
+	public void teleopPeriodic() 
+	{
+		
+		number++;
+		XLog.append(number);
+
+	    // double X = m_robotContainer.getLogValues()[0];
+		// double Y = m_robotContainer.getLogValues()[1];
+
+		// if (X != Double.NaN) XLog.append(X);
+		// if (Y != Double.NaN) YLog.append(Y);
+	}
 
 	@Override
 	public void teleopExit() {}
@@ -115,7 +140,6 @@ public class Robot extends TimedRobot {
 	{
 	    inSim = true;
 	    m_robotContainer.doSimStuff();
-	    // m_robotContainer.updateLogger();
 	}
 
 }
